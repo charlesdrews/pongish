@@ -108,7 +108,7 @@ public interface GameObjects {
          *
          * @param millisecondsSinceLastUpdate is the time delta for the ball's movement.
          */
-        void move(final long millisecondsSinceLastUpdate);
+        void move(final long millisecondsSinceLastUpdate, final int gameBoardHeight);
 
         /**
          * Determine whether the ball has hit either the left or right side walls.
@@ -151,7 +151,12 @@ public interface GameObjects {
          * @param degrees should be between -180° and 180°, with 0° = up, negative = left, and
          *                positive = right.
          */
-        void setDirectionInDegrees(double degrees);
+        void setDirectionInDegrees(final double degrees);
+
+        /**
+         * @return the current direction in degrees.
+         */
+        double getDirectionInDegrees();
 
         /**
          * Get the standard radians representation of the angle for use in trigonometry. Convert

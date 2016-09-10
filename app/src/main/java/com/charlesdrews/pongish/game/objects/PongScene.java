@@ -7,6 +7,7 @@ import com.charlesdrews.pongish.game.GameEngine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Container for the other game objects.
@@ -18,6 +19,14 @@ public class PongScene implements GameObjects.Scene {
     // =================================== Constants =============================================
 
     private static final int DEFAULT_BACKGROUND_COLOR = Color.BLACK;
+
+    private static final double MIN_ABS_VAL_DEG_AFTER_PADDLE_COLLISION = 5d;
+    private static final double MAX_ABS_VAL_DEG_AFTER_PADDLE_COLLISION = 180d -
+            MIN_ABS_VAL_DEG_AFTER_PADDLE_COLLISION;
+    private static final double ABS_VAL_RANGE_AFTER_PADDLE_COLLISION =
+            MAX_ABS_VAL_DEG_AFTER_PADDLE_COLLISION - MIN_ABS_VAL_DEG_AFTER_PADDLE_COLLISION;
+    private static final double HALF_ABS_VAL_RANGE_AFTER_PADDLE_COLLISION =
+            ABS_VAL_RANGE_AFTER_PADDLE_COLLISION / 2d;
 
 
     // ================================= Member variables =======================================
@@ -41,7 +50,9 @@ public class PongScene implements GameObjects.Scene {
         mRightPaddle = new PongPaddle(GameObjects.Scene.RIGHT_PADDLE, mGameBoardWidth,
                 mGameBoardHeight);
 
-        //TODO - initialize balls
+        mNormalBall = new PongBall(mGameBoardWidth, mGameBoardHeight);
+
+        mBonusBalls = new CopyOnWriteArrayList<>();
     }
 
     public PongScene(int gameBoardWidth, int gameBoardHeight) {
@@ -63,13 +74,16 @@ public class PongScene implements GameObjects.Scene {
 
     @Override
     public void updateGameObjectPositions(final long millisSinceLastUpdate) {
-        /*
-        mNormalBall.move(millisSinceLastUpdate);
 
+        // Move the normal ball, then check if it hit a paddle
+        mNormalBall.move(millisSinceLastUpdate, mGameBoardHeight);
+        checkForPaddleCollisionsAndUpdateBall(mNormalBall);
+
+        // Do the same for each bonus ball
         for (GameObjects.Ball ball : mBonusBalls) {
-            ball.move(millisSinceLastUpdate);
+            ball.move(millisSinceLastUpdate, mGameBoardHeight);
+            checkForPaddleCollisionsAndUpdateBall(ball);
         }
-        */
     }
 
     @Override
@@ -80,7 +94,6 @@ public class PongScene implements GameObjects.Scene {
     @Override
     public List<GameEngine.CircleToRender> getCirclesToRender() {
 
-        /*
         List<GameEngine.CircleToRender> circles = new ArrayList<>(mBonusBalls.size() + 1);
 
         circles.add(mNormalBall);
@@ -89,8 +102,6 @@ public class PongScene implements GameObjects.Scene {
         }
 
         return circles;
-        */
-        return new ArrayList<GameEngine.CircleToRender>();
     }
 
     @Override
@@ -132,4 +143,41 @@ public class PongScene implements GameObjects.Scene {
             return new PongScene[size];
         }
     };
+
+
+    // ================================ Helper methods ===========================================
+
+    private double getDirectionAfterPaddleCollision(int paddlePosition,
+                                                   float collisionLocation) {
+
+        double absoluteValueNewDirection = 90d +
+                (-collisionLocation) * HALF_ABS_VAL_RANGE_AFTER_PADDLE_COLLISION;
+
+        if (paddlePosition == GameObjects.Scene.LEFT_PADDLE) {
+            return absoluteValueNewDirection;
+        }
+        else if (paddlePosition == GameObjects.Scene.RIGHT_PADDLE) {
+            return -absoluteValueNewDirection;
+        }
+        else {
+            throw new IllegalStateException("Paddle's position is neither " +
+                    "GameObjects.Scene.LEFT_PADDLE nor GameObjects.Scene.RIGHT_PADDLE");
+        }
+    }
+
+    private void checkForPaddleCollisionsAndUpdateBall(GameObjects.Ball ball) {
+
+        // Check for collision with left paddle
+        float collision = mLeftPaddle.getRelativeCollisionLocation(ball);
+        if (collision != NO_PADDLE_COLLISION) {
+            ball.setDirection(getDirectionAfterPaddleCollision(LEFT_PADDLE, collision));
+        }
+        else {
+            // If no collision with left paddle, check right paddle
+            collision = mRightPaddle.getRelativeCollisionLocation(ball);
+            if (collision != NO_PADDLE_COLLISION) {
+                ball.setDirection(getDirectionAfterPaddleCollision(RIGHT_PADDLE, collision));
+            }
+        }
+    }
 }

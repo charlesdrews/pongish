@@ -1,5 +1,6 @@
 package com.charlesdrews.pongish.game.objects;
 
+import android.graphics.Color;
 import android.os.Parcel;
 
 /**
@@ -10,20 +11,59 @@ import android.os.Parcel;
  */
 public class PongBall implements GameObjects.Ball {
 
+    // ===================================== Constants ==========================================
+
+    private static final int DEFAULT_COLOR = Color.WHITE;
+    private static final float DEFAULT_RADIUS_IN_PX = 30f;
+    private static final float DEFAULT_SPEED_IN_PX_PER_MS = 1f;
+
+
     // ================================= Member variables =======================================
-    //TODO
+
+    private GameObjects.Direction mDirection;
+    private float mCenterX, mCenterY, mRadiusInPx, mSpeedInPxPerMs;
+    private int mColor;
 
 
     // =================================== Constructor ==========================================
-    //TODO
+
+    public PongBall(final int gameBoardWidth, final int gameBoardHeight, final float radiusInPx,
+                    final float speedInPxPerMs, final int color) {
+        mCenterX = ((float) gameBoardWidth) / 2f;
+        mCenterY = ((float) gameBoardHeight) / 2f;
+        mRadiusInPx = radiusInPx;
+        mSpeedInPxPerMs = speedInPxPerMs;
+        mColor = color;
+
+        mDirection = new BallDirection();
+    }
+
+    public PongBall(final int gameBoardWidth, final int gameBoardHeight) {
+        this(gameBoardWidth, gameBoardHeight, DEFAULT_RADIUS_IN_PX, DEFAULT_SPEED_IN_PX_PER_MS,
+                DEFAULT_COLOR);
+    }
 
 
     // =============================== GameObjects.Ball methods ===================================
 
     @Override
-    public void move(long millisecondsSinceLastUpdate) {
-        //TODO
+    public void move(final long millisecondsSinceLastUpdate, final int gameBoardHeight) {
+        float distanceInPx = mSpeedInPxPerMs * millisecondsSinceLastUpdate;
 
+        // Trigonometry
+        double angleInRadians = mDirection.getDirectionInRadians();
+        mCenterX += Math.cos(angleInRadians) * distanceInPx;
+        mCenterY += Math.sin(angleInRadians) * distanceInPx;
+
+        // Check if ball hit top or bottom wall
+        if (mCenterY - mRadiusInPx < 0) {
+            mDirection.setDirectionInDegrees(180d - mDirection.getDirectionInDegrees());
+            mCenterY = mRadiusInPx;
+        }
+        else if (mCenterY + mRadiusInPx > gameBoardHeight) {
+            mDirection.setDirectionInDegrees(180d - mDirection.getDirectionInDegrees());
+            mCenterY = gameBoardHeight - mRadiusInPx;
+        }
     }
 
     @Override
@@ -35,13 +75,11 @@ public class PongBall implements GameObjects.Ball {
     @Override
     public void changeSpeed(float deltaSpeedInPxPerSecond) {
         //TODO
-
     }
 
     @Override
     public void setDirection(double directionInDegrees) {
-        //TODO
-
+        mDirection.setDirectionInDegrees(directionInDegrees);
     }
 
 
@@ -49,26 +87,22 @@ public class PongBall implements GameObjects.Ball {
 
     @Override
     public float getCenterX() {
-        //TODO
-        return 0;
+        return mCenterX;
     }
 
     @Override
     public float getCenterY() {
-        //TODO
-        return 0;
+        return mCenterY;
     }
 
     @Override
     public float getRadius() {
-        //TODO
-        return 0;
+        return mRadiusInPx;
     }
 
     @Override
     public int getColor() {
-        //TODO
-        return 0;
+        return mColor;
     }
 
 
