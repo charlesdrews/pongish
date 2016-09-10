@@ -60,11 +60,13 @@ public class PongPresenter implements GameContract.Presenter {
     @Override
     public void bindRenderer(@NonNull GameEngine.Renderer renderer) {
         mRenderer = renderer;
+        mEngine.bindRenderer(mRenderer);
     }
 
     @Override
     public void unbindRenderer() {
         mRenderer = null;
+        mEngine.unbindRenderer();
     }
 
     @Override
@@ -140,11 +142,13 @@ public class PongPresenter implements GameContract.Presenter {
 
     @Override
     public void onLeftSidePointerMove(float deltaY) {
-        mScene.movePaddle(GameObjects.Scene.LEFT_PADDLE, deltaY);
+        mScene.movePaddle(GameObjects.Scene.LEFT_PADDLE, deltaY,
+                mEngine.getLastFrameRenderTimeInMillis());
     }
 
     @Override
     public void onRightSidePointerMove(float deltaY) {
-        mScene.movePaddle(GameObjects.Scene.RIGHT_PADDLE, deltaY);
+        mScene.movePaddle(GameObjects.Scene.RIGHT_PADDLE, deltaY,
+                mEngine.getLastFrameRenderTimeInMillis());
     }
 }

@@ -1,9 +1,12 @@
 package com.charlesdrews.pongish.game;
 
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.charlesdrews.pongish.game.objects.GameObjects;
+
+import java.util.Locale;
 
 /**
  * Provide game engine functionality, including the main update/draw loop.
@@ -12,8 +15,15 @@ import com.charlesdrews.pongish.game.objects.GameObjects;
  */
 public class PongEngine implements GameEngine.Engine {
 
+    // ==================================== Constants ============================================
     private static final String TAG = "PongEngine";
-    
+
+    private static final String FPS_TEMPLATE = "FPS: %d";
+    private static final int FPS_TEXT_COLOR = Color.WHITE;
+    private static final float FPS_TEXT_SIZE = 40f;
+    private static final float FPS_X_COORDINATE = 40f;
+    private static final float FPS_Y_COORDINATE = 80f;
+
 
     // ================================== Member variables =====================================
 
@@ -50,6 +60,11 @@ public class PongEngine implements GameEngine.Engine {
     }
 
     @Override
+    public long getLastFrameRenderTimeInMillis() {
+        return mLastFrameRenderTimeInMillis;
+    }
+
+    @Override
     public void startGameExecution() {
         mPlaying = true;
 
@@ -72,8 +87,39 @@ public class PongEngine implements GameEngine.Engine {
 
     @Override
     public void drawFrame() {
-        //TODO
 
+        // Lock the canvas. If not successful, do not proceed.
+        if (!mRenderer.beginDrawing()) {
+            Log.d(TAG, "drawFrame: unable to lock canvas!");
+            return;
+        }
+
+        // Wipe everything by re-drawing background color
+        mRenderer.drawBackground(mScene.getBackgroundColor());
+
+        // Draw each game item
+        for (GameEngine.CircleToRender circle : mScene.getCirclesToRender()) {
+            mRenderer.drawCircle(circle.getCenterX(), circle.getCenterY(), circle.getRadius(),
+                    circle.getColor());
+        }
+
+        for (GameEngine.RectToRender rect : mScene.getRectsToRender()) {
+            mRenderer.drawRect(rect.getLeftX(), rect.getTopY(), rect.getRightX(), rect.getBottomY(),
+                    rect.getColor());
+        }
+
+        // Draw frames per second text
+        long framesPerSecond = 0L;
+        if (mLastFrameRenderTimeInMillis > 0L) {
+            framesPerSecond = 1_000L / mLastFrameRenderTimeInMillis;
+        }
+
+        mRenderer.drawFramesPerSecond(
+                String.format(Locale.getDefault(), FPS_TEMPLATE, framesPerSecond),
+                FPS_X_COORDINATE, FPS_Y_COORDINATE, FPS_TEXT_SIZE, FPS_TEXT_COLOR);
+
+        // Unlock canvas and post drawings
+        mRenderer.commitDrawing();
     }
 
     @Override

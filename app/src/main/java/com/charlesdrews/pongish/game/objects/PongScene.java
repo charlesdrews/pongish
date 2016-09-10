@@ -1,5 +1,6 @@
 package com.charlesdrews.pongish.game.objects;
 
+import android.graphics.Color;
 import android.os.Parcel;
 
 import com.charlesdrews.pongish.game.GameEngine;
@@ -13,33 +14,55 @@ import java.util.List;
  */
 public class PongScene implements GameObjects.Scene {
 
+    // =================================== Constants =============================================
+
+    private static final int DEFAULT_BACKGROUND_COLOR = Color.BLACK;
+
+
     // ================================= Member variables =======================================
 
-    int mGameBoardWidth, mGameBoardHeight;
+    private int mGameBoardWidth, mGameBoardHeight, mBackgroundColor;
+    private GameObjects.Paddle mLeftPaddle, mRightPaddle;
+    private GameObjects.Ball mNormalBall;
+    private List<GameObjects.Ball> mBonusBalls;
 
 
     // =================================== Constructor ==========================================
 
-    public PongScene(int gameBoardWidth, int gameBoardHeight) {
+    public PongScene(int gameBoardWidth, int gameBoardHeight, int gameBoardColor) {
         mGameBoardWidth = gameBoardWidth;
         mGameBoardHeight = gameBoardHeight;
+        mBackgroundColor = gameBoardColor;
 
-        //TODO?
+        //TODO - initialize paddles & balls
+    }
+
+    public PongScene(int gameBoardWidth, int gameBoardHeight) {
+        this(gameBoardWidth, gameBoardHeight, DEFAULT_BACKGROUND_COLOR);
     }
 
 
-    // ============================= GameObjects.PongScene methods ===================================
+    // ============================= GameObjects.PongScene methods ===============================
 
     @Override
-    public void movePaddle(int paddle, float deltaY) {
+    public void movePaddle(int paddle, float deltaY, long millisSinceLastUpdate) {
+        if (paddle == LEFT_PADDLE) {
+            mLeftPaddle.move(deltaY, mGameBoardHeight, millisSinceLastUpdate);
+        }
+        else if (paddle == RIGHT_PADDLE) {
+            mRightPaddle.move(deltaY, mGameBoardHeight, millisSinceLastUpdate);
+        }
+    }
+
+    @Override
+    public void updateGameObjectPositions(long millisSinceLastUpdate) {
         //TODO
 
     }
 
     @Override
-    public void updateGameObjectPositions(long millisecondsSinceLastUpdate) {
-        //TODO
-
+    public int getBackgroundColor() {
+        return mBackgroundColor;
     }
 
     @Override

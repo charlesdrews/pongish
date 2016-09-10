@@ -36,6 +36,14 @@ public interface GameEngine {
         void setScene(@NonNull GameObjects.Scene scene);
 
         /**
+         * Retrieve the rendering time of the last frame in milliseconds for use by the Presenter
+         * in updating the Paddle positions in response to user drag motions.
+         *
+         * @return the number of milliseconds required to update and draw the last frame.
+         */
+        long getLastFrameRenderTimeInMillis();
+
+        /**
          * Create a new thread and initiate the run() method and its update/draw loop on the thread.
          */
         void startGameExecution();

@@ -33,14 +33,20 @@ public interface GameObjects {
          * @param paddle must be PongScene.LEFT_PADDLE (0), or PongScene.RIGHT_PADDLE (1).
          * @param deltaY is the amount to move up (negative) or down (positive).
          */
-        void movePaddle(int paddle, final float deltaY);
+        void movePaddle(final int paddle, final float deltaY, final long millisSinceLastUpdate);
 
         /**
          * Move all game objects the distance they should travel in the specified amount of time.
          *
-         * @param millisecondsSinceLastUpdate is the time delta for the movement.
+         * @param millisSinceLastUpdate is the time delta for the movement.
          */
-        void updateGameObjectPositions(final long millisecondsSinceLastUpdate);
+        void updateGameObjectPositions(final long millisSinceLastUpdate);
+
+        /**
+         * Retrieve the background color to use for this Scene.
+         * @return an int representation of the background color.
+         */
+        int getBackgroundColor();
 
         /**
          * Retrieve a List of circles for the Renderer to draw.
