@@ -32,12 +32,16 @@ public class GameActivity extends AppCompatActivity implements GameContract.View
         mSavedGameState = savedInstanceState;
 
         // Initialize view and presenter
-        mPresenter = new GamePresenter();
-        mGameView = (GameView) findViewById(R.id.game_view);
+        mPresenter = new PongPresenter();
+        mGameView = (PongView) findViewById(R.id.game_view);
 
         // Bind them to each other
         mPresenter.bindViews(mGameView, this);
         mGameView.bindPresenter(mPresenter);
+
+        // Bind the renderer to the presenter. In this case, mGameView is also the renderer.
+        mPresenter.bindRenderer((GameEngine.Renderer) mGameView);
+
         mBindingsEstablished = true;
 
         // Set up play/pause and restart buttons
@@ -55,6 +59,7 @@ public class GameActivity extends AppCompatActivity implements GameContract.View
         // If returning after activity was paused, re-establish bindings
         if (!mBindingsEstablished) {
             mPresenter.bindViews(mGameView, this);
+            mPresenter.bindRenderer((GameEngine.Renderer) mGameView);
             mGameView.bindPresenter(mPresenter);
             mBindingsEstablished = true;
         }
@@ -73,6 +78,7 @@ public class GameActivity extends AppCompatActivity implements GameContract.View
         mPresenter.onActivityPause();
 
         mPresenter.unbindViews();
+        mPresenter.unbindRenderer();
         mGameView.unbindPresenter();
         mBindingsEstablished = false;
     }

@@ -61,7 +61,7 @@ public interface GameContract {
     }
 
     /**
-     * The Presenter will instantiate GameEngine.Engine and GameObjects.Scene instances. It will
+     * The Presenter will instantiate GameEngine.Engine and GameObjects.PongScene instances. It will
      * hold references to View, ViewActivity, and GameEngine.Renderer instances.
      */
     interface Presenter {
@@ -131,22 +131,17 @@ public interface GameContract {
         void onRestartButtonClick();
 
         /**
-         * Check if user is touching a paddle and track whether a paddle move is in progress.
+         * Communicate the change in left paddle position to the PongScene.
          *
-         * @param x is the x coordinate of the motion event on ACTION_DOWN.
-         * @param y is the y coordinate of the motion event on ACTION_DOWN.
-         * @return true if touch coincides with a paddle location, else false.
+         * @param deltaY the change in position requested by the user since the last event.
          */
-        boolean onMotionEventDown(float x, float y);
+        void onLeftSidePointerMove(float deltaY);
 
         /**
-         * If a paddle move is in progress, communicate the new coordinates to the GameEngine.
+         * Communicate the change in right paddle position to the PongScene.
+         *
+         * @param deltaY the change in position requested by the user since the last event.
          */
-        void onMotionEventMove(float newYCoordinate);
-
-        /**
-         * If a paddle move is in progress, change state to indicate move is completed.
-         */
-        void onMotionEventUp();
+        void onRightSidePointerMove(float deltaY);
     }
 }

@@ -15,14 +15,25 @@ import java.util.List;
 public interface GameObjects {
 
     /**
-     * The Scene is a container for the other game objects (paddles, balls) and will include the
+     * The PongScene is a container for the other game objects (paddles, balls) and will include the
      * logic to detect and handle collisions between game objects.
      */
     interface Scene extends Parcelable {
 
+        int LEFT_PADDLE = 0;
+        int RIGHT_PADDLE = 1;
+
         int NO_COLLISION = 0;
         int LEFT_WALL_COLLISION = 1;
         int RIGHT_WALL_COLLISION = 2;
+
+        /**
+         * Move the specified paddle by the specified amount.
+         *
+         * @param paddle must be PongScene.LEFT_PADDLE (0), or PongScene.RIGHT_PADDLE (1).
+         * @param deltaY is the amount to move up (negative) or down (positive).
+         */
+        void movePaddle(int paddle, final float deltaY);
 
         /**
          * Move all game objects the distance they should travel in the specified amount of time.
@@ -34,14 +45,14 @@ public interface GameObjects {
         /**
          * Retrieve a List of circles for the Renderer to draw.
          *
-         * @return the circles included in the Scene.
+         * @return the circles included in the PongScene.
          */
         List<GameEngine.CircleToRender> getCirclesToRender();
 
         /**
          * Retrieve a list of rectangles for the Renderer to draw.
          *
-         * @return the rectangles included in the Scene.
+         * @return the rectangles included in the PongScene.
          */
         List<GameEngine.RectToRender> getRectsToRender();
 
@@ -69,7 +80,7 @@ public interface GameObjects {
          * @return between -1.0 and 1.0, with 1.0 representing a collision at the exact top of the
          * paddle, 0.0 indicating a collision with the exact center of the paddle, and -1.0
          * representing a collision with the exact bottom of the paddle, and proportional values
-         * for positions in between. If no collision detected, will return Scene.NO_COLLISION (-2f).
+         * for positions in between. If no collision detected, will return PongScene.NO_COLLISION (-2f).
          */
         float getRelativeCollisionLocation(@NonNull final Ball ball);
     }
@@ -87,8 +98,8 @@ public interface GameObjects {
          * Determine whether the ball has hit either the left or right side walls.
          *
          * @param rightWallXCoordinate is equivalent to the game/scene's width.
-         * @return Scene.NO_COLLISION (0), Scene.LEFT_WALL_COLLISION (1),
-         * or Scene.RIGHT_WALL_COLLISION (2).
+         * @return PongScene.NO_COLLISION (0), PongScene.LEFT_WALL_COLLISION (1),
+         * or PongScene.RIGHT_WALL_COLLISION (2).
          */
         int checkIfHitSideWall(final float rightWallXCoordinate);
 

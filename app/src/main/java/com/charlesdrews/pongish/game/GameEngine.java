@@ -29,21 +29,26 @@ public interface GameEngine {
         void unbindRenderer();
 
         /**
-         * Set the Scene object upon which the Engine will act.
+         * Set the PongScene object upon which the Engine will act.
          *
-         * @param scene is the Scene instance the Engine will update and render.
+         * @param scene is the PongScene instance the Engine will update and render.
          */
         void setScene(@NonNull GameObjects.Scene scene);
 
         /**
          * Create a new thread and initiate the run() method and its update/draw loop on the thread.
          */
-        void startGameExecutionLoop();
+        void startGameExecution();
 
         /**
          * Halt execution of the update/draw loop in run() and join the thread so it can complete.
          */
-        void stopGameExecutionLoop();
+        void stopGameExecution();
+
+        /**
+         * Draw one frame using the current positions of all game objects.
+         */
+        void drawFrame();
 
         /**
          * Provide the main game update/draw loop, which will run in a separate thread.
