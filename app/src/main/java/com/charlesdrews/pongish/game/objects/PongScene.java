@@ -5,6 +5,7 @@ import android.os.Parcel;
 
 import com.charlesdrews.pongish.game.GameEngine;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,12 +30,18 @@ public class PongScene implements GameObjects.Scene {
 
     // =================================== Constructor ==========================================
 
-    public PongScene(int gameBoardWidth, int gameBoardHeight, int gameBoardColor) {
+    public PongScene(final int gameBoardWidth, final int gameBoardHeight,
+                     final int gameBoardColor) {
         mGameBoardWidth = gameBoardWidth;
         mGameBoardHeight = gameBoardHeight;
         mBackgroundColor = gameBoardColor;
 
-        //TODO - initialize paddles & balls
+        mLeftPaddle = new PongPaddle(GameObjects.Scene.LEFT_PADDLE, mGameBoardWidth,
+                mGameBoardHeight);
+        mRightPaddle = new PongPaddle(GameObjects.Scene.RIGHT_PADDLE, mGameBoardWidth,
+                mGameBoardHeight);
+
+        //TODO - initialize balls
     }
 
     public PongScene(int gameBoardWidth, int gameBoardHeight) {
@@ -45,7 +52,7 @@ public class PongScene implements GameObjects.Scene {
     // ============================= GameObjects.PongScene methods ===============================
 
     @Override
-    public void movePaddle(int paddle, float deltaY, long millisSinceLastUpdate) {
+    public void movePaddle(final int paddle, final float deltaY, final long millisSinceLastUpdate) {
         if (paddle == LEFT_PADDLE) {
             mLeftPaddle.move(deltaY, mGameBoardHeight, millisSinceLastUpdate);
         }
@@ -55,9 +62,14 @@ public class PongScene implements GameObjects.Scene {
     }
 
     @Override
-    public void updateGameObjectPositions(long millisSinceLastUpdate) {
-        //TODO
+    public void updateGameObjectPositions(final long millisSinceLastUpdate) {
+        /*
+        mNormalBall.move(millisSinceLastUpdate);
 
+        for (GameObjects.Ball ball : mBonusBalls) {
+            ball.move(millisSinceLastUpdate);
+        }
+        */
     }
 
     @Override
@@ -67,14 +79,29 @@ public class PongScene implements GameObjects.Scene {
 
     @Override
     public List<GameEngine.CircleToRender> getCirclesToRender() {
-        //TODO
-        return null;
+
+        /*
+        List<GameEngine.CircleToRender> circles = new ArrayList<>(mBonusBalls.size() + 1);
+
+        circles.add(mNormalBall);
+        for (GameObjects.Ball ball : mBonusBalls) {
+            circles.add(ball);
+        }
+
+        return circles;
+        */
+        return new ArrayList<GameEngine.CircleToRender>();
     }
 
     @Override
     public List<GameEngine.RectToRender> getRectsToRender() {
-        //TODO
-        return null;
+
+        List<GameEngine.RectToRender> rects = new ArrayList<>(2);
+
+        rects.add(mLeftPaddle);
+        rects.add(mRightPaddle);
+
+        return rects;
     }
 
 

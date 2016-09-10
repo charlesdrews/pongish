@@ -34,11 +34,7 @@ public class PongPresenter implements GameContract.Presenter {
     // ====================================== Constructor ========================================
 
     public PongPresenter() {
-
         mEngine = new PongEngine();
-
-        //TODO
-
     }
 
 
@@ -87,6 +83,7 @@ public class PongPresenter implements GameContract.Presenter {
 
         // Make sure game not running until we want it to
         mEngine.stopGameExecution();
+        mViewActivity.showPlayIcon();
 
         // If game state still in memory in Presenter, pause game & redraw last frame
         if (mScene != null) {
@@ -109,22 +106,26 @@ public class PongPresenter implements GameContract.Presenter {
             mScene = new PongScene(mGameBoardWidth, mGameBoardHeight);
             mEngine.setScene(mScene);
             mEngine.startGameExecution();
+            mViewActivity.showPauseIcon();
         }
     }
 
     @Override
     public void onActivityPause() {
         mEngine.stopGameExecution();
+        mViewActivity.showPlayIcon();
     }
 
     @Override
     public void onPlayButtonClick() {
         mEngine.startGameExecution();
+        mViewActivity.showPauseIcon();
     }
 
     @Override
     public void onPauseButtonClick() {
         mEngine.stopGameExecution();
+        mViewActivity.showPlayIcon();
     }
 
     @Override
@@ -138,6 +139,7 @@ public class PongPresenter implements GameContract.Presenter {
         mScene = new PongScene(mGameBoardWidth, mGameBoardHeight);
         mEngine.setScene(mScene);
         mEngine.startGameExecution();
+        mViewActivity.showPauseIcon();
     }
 
     @Override

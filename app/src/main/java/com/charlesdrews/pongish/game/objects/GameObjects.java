@@ -23,6 +23,8 @@ public interface GameObjects {
         int LEFT_PADDLE = 0;
         int RIGHT_PADDLE = 1;
 
+        float NO_PADDLE_COLLISION = -2f;
+
         int NO_COLLISION = 0;
         int LEFT_WALL_COLLISION = 1;
         int RIGHT_WALL_COLLISION = 2;
@@ -64,19 +66,22 @@ public interface GameObjects {
 
     }
 
+    /**
+     * Paddles will appear on the left and right of the game board and will reflect balls.
+     */
     interface Paddle extends GameEngine.RectToRender, Parcelable {
 
         /**
          * Move up (negative deltaY) or down (positive deltaY) and ensure paddle stays on screen.
-         * The Paddle's top y cannot be < 0 and the bottom y cannot be > maxY. Also, ensure the
-         * movement does not exceed the maximum speed of the paddle.
+         * The Paddle's top y cannot be < 0 and the bottom y cannot be > gameBoardHeight. Also,
+         * ensure the movement does not exceed the maximum speed of the paddle.
          *
          * @param deltaY is the number of pixels to move up (negative) or down (positive).
-         * @param maxY is the maximum allowable y value for the game/scene.
+         * @param gameBoardHeight is the maximum allowable y value for the game/scene.
          * @param millisecondsSinceLastUpdate will determine how far it is possible for the paddle
          *                                    to move, based on it's maximum speed.
          */
-        void move(final float deltaY, final float maxY, final long millisecondsSinceLastUpdate);
+        void move(float deltaY, final float gameBoardHeight, final long millisecondsSinceLastUpdate);
 
         /**
          * Determine whether the specified ball has collided with the Paddle, and if so,
@@ -86,11 +91,16 @@ public interface GameObjects {
          * @return between -1.0 and 1.0, with 1.0 representing a collision at the exact top of the
          * paddle, 0.0 indicating a collision with the exact center of the paddle, and -1.0
          * representing a collision with the exact bottom of the paddle, and proportional values
-         * for positions in between. If no collision detected, will return PongScene.NO_COLLISION (-2f).
+         * for positions in between. If no collision detected, will return
+         * PongScene.NO_PADDLE_COLLISION (-2f).
          */
         float getRelativeCollisionLocation(@NonNull final Ball ball);
     }
 
+    /**
+     * One or more balls will move across the game board at a given time, bouncing off the top and
+     * bottom walls as well as the paddles.
+     */
     interface Ball extends GameEngine.CircleToRender, Parcelable {
 
         /**
