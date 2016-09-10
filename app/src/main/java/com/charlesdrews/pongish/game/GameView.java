@@ -13,8 +13,8 @@ import android.view.SurfaceView;
  *
  * Created by charlie on 9/10/16.
  */
-public class GameView extends SurfaceView
-        implements SurfaceHolder.Callback, GameContract.View, GameEngine.Renderer {
+public class GameView extends SurfaceView implements SurfaceHolder.Callback, GameContract.View,
+        GameEngine.Renderer {
 
     // ===================================== Member variables =====================================
 
