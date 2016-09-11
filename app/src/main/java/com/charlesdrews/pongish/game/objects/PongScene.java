@@ -35,6 +35,7 @@ public class PongScene implements GameObjects.Scene {
     private static final float BALL_SPEED_INCREASE_ON_PADDLE_HIT = 0.02f;
 
     private static final int BALL_COLOR_ON_POINT_SCORED = Color.RED;
+    private static final int END_LINE_COLOR_ON_POINT_SCORED = Color.RED;
 
     private static final double MIN_ABS_VAL_DEG_AFTER_PADDLE_COLLISION = 10d;
     private static final double HALF_ABS_VAL_RANGE_AFTER_PADDLE_COLLISION =
@@ -44,14 +45,15 @@ public class PongScene implements GameObjects.Scene {
     // ================================= Member variables =======================================
 
     private int mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, mBackgroundColor;
+    private GameObjects.VerticalLine mLeftEndLine, mRightEndLine, mCenterLine;
     private GameObjects.Paddle mLeftPaddle, mRightPaddle;
     private GameObjects.Ball mNormalBall;
     private List<GameObjects.Ball> mBonusBalls;
     private int consecutivePaddleHits = 0;
 
+    private List<GameEngine.VerticalLineToRender> mVerticalLinesToRender;
     private List<GameEngine.CircleToRender> mCirclesToRender;
     private List<GameEngine.RectangleToRender> mRectanglesToRender;
-    private List<GameEngine.VerticalLineToRender> mVerticalLinesToRender;
 
 
     // =================================== Constructor ==========================================
@@ -174,6 +176,16 @@ public class PongScene implements GameObjects.Scene {
      */
     private void initializeGameObjects() {
 
+        // Add left, right, and center line
+        mLeftEndLine = new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX, 0, mGameBoardHeight,
+                END_LINE_COLOR, false);
+
+        mRightEndLine = new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth, 0,
+                mGameBoardHeight, END_LINE_COLOR, false);
+
+        mCenterLine = new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth / 2f, 0,
+                mGameBoardHeight, CENTER_LINE_COLOR, true);
+
         // Add left & right paddles and the normal ball.
         mLeftPaddle = new PongPaddle(LEFT_PADDLE, PADDLE_WIDTH_IN_PX,
                 mGameBoardHeight * PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
@@ -194,29 +206,19 @@ public class PongScene implements GameObjects.Scene {
             mBonusBalls.clear();
         }
 
-        // Instantiate empty list to hold balls as circles to return to the renderer.
+        // Instantiate and initialize a list of vertical lines to return to the renderer.
+        mVerticalLinesToRender = new ArrayList<>(3);
+        mVerticalLinesToRender.add(mLeftEndLine);
+        mVerticalLinesToRender.add(mRightEndLine);
+        mVerticalLinesToRender.add(mCenterLine);
+
+        // Instantiate an empty list to hold balls as circles to return to the renderer.
         mCirclesToRender = new ArrayList<>();
 
-        // Instantiate and initialize list of paddles as rectangles to return to the renderer.
+        // Instantiate and initialize a list of paddles as rectangles to return to the renderer.
         mRectanglesToRender = new ArrayList<>(2);
         mRectanglesToRender.add(mLeftPaddle);
         mRectanglesToRender.add(mRightPaddle);
-
-        // Instantiate and initialize list of vertical lines to return to the renderer.
-        mVerticalLinesToRender = new ArrayList<>(3);
-
-        // Left end line
-        mVerticalLinesToRender.add(new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX, 0,
-                mGameBoardHeight, END_LINE_COLOR, false));
-
-        // Right end line
-        mVerticalLinesToRender.add(new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth,
-                0, mGameBoardHeight, END_LINE_COLOR, false));
-
-        // Center line
-        mVerticalLinesToRender.add(new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth / 2f,
-                0, mGameBoardHeight, CENTER_LINE_COLOR, true));
-
     }
 
     /**
@@ -298,15 +300,19 @@ public class PongScene implements GameObjects.Scene {
 
             // If a side wall was hit, return true so the game engine knows to pause the loop
             switch (hit) {
-                case GameObjects.Scene.LEFT_WALL_HIT:
+                case GameObjects.Scene.LEFT_WALL_HIT: {
                     ball.setColor(BALL_COLOR_ON_POINT_SCORED);
+                    mLeftEndLine.setColor(END_LINE_COLOR_ON_POINT_SCORED);
                     consecutivePaddleHits = 0;
                     return true;
+                }
 
-                case GameObjects.Scene.RIGHT_WALL_HIT:
+                case GameObjects.Scene.RIGHT_WALL_HIT: {
                     ball.setColor(BALL_COLOR_ON_POINT_SCORED);
+                    mRightEndLine.setColor(END_LINE_COLOR_ON_POINT_SCORED);
                     consecutivePaddleHits = 0;
                     return true;
+                }
 
                 default:
                     return false;

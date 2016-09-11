@@ -1,5 +1,8 @@
 package com.charlesdrews.pongish.game.objects;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.charlesdrews.pongish.game.GameEngine;
 
 /**
@@ -7,7 +10,8 @@ import com.charlesdrews.pongish.game.GameEngine;
  *
  * Created by charlie on 9/11/16.
  */
-public class PongLine implements GameEngine.VerticalLineToRender {
+public class PongLine implements GameObjects.VerticalLine, GameEngine.VerticalLineToRender {
+
     private float mX, mTopY, mBottomY;
     private int mColor;
     private boolean mDashed;
@@ -19,6 +23,17 @@ public class PongLine implements GameEngine.VerticalLineToRender {
         mColor = color;
         mDashed = dashed;
     }
+
+
+    // ============================ GameObjects.VerticalLine methods =============================
+
+    @Override
+    public void setColor(int color) {
+        mColor = color;
+    }
+
+
+    // =========================== GameEngine.VerticalLineToRender methods ========================
 
     @Override
     public float getX() {
@@ -44,4 +59,41 @@ public class PongLine implements GameEngine.VerticalLineToRender {
     public boolean isDashed() {
         return mDashed;
     }
+
+
+    // =========================== Parcelable methods & constant ==================================
+
+    protected PongLine(Parcel in) {
+        mX = in.readFloat();
+        mTopY = in.readFloat();
+        mBottomY = in.readFloat();
+        mColor = in.readInt();
+        mDashed = in.readByte() != 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeFloat(mX);
+        dest.writeFloat(mTopY);
+        dest.writeFloat(mBottomY);
+        dest.writeInt(mColor);
+        dest.writeByte((byte) (mDashed ? 1 : 0));
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<PongLine> CREATOR = new Creator<PongLine>() {
+        @Override
+        public PongLine createFromParcel(Parcel in) {
+            return new PongLine(in);
+        }
+
+        @Override
+        public PongLine[] newArray(int size) {
+            return new PongLine[size];
+        }
+    };
 }

@@ -186,4 +186,17 @@ public interface GameObjects {
          */
         double getDirectionInRadians();
     }
+
+    /**
+     * Vertical lines will be used to mark the left and right edges of the game board, as well as
+     * the center.
+     */
+    interface VerticalLine extends GameEngine.VerticalLineToRender, Parcelable {
+
+        /**
+         * Change the line's color.
+         * @param color is the new color as an int.
+         */
+        void setColor(int color);
+    }
 }
