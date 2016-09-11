@@ -11,15 +11,6 @@ import android.os.Parcel;
  */
 public class PongBall implements GameObjects.Ball {
 
-    // ===================================== Constants ==========================================
-
-    private static final int DEFAULT_COLOR = Color.WHITE;
-    private static final float DEFAULT_RADIUS_IN_PX = 30f;
-    private static final float DEFAULT_SPEED_IN_PX_PER_MS = 1f;
-
-    private static final int COLOR_ON_LEFT_RIGHT_WALL_HIT = Color.RED;
-
-
     // ================================= Member variables =======================================
 
     private GameObjects.Direction mDirection;
@@ -39,12 +30,6 @@ public class PongBall implements GameObjects.Ball {
         mColor = color;
 
         mDirection = new BallDirection();
-    }
-
-    public PongBall(final int gameBoardWidth, final int gameBoardHeight,
-                    final int gameBoardHorizontalMargin) {
-        this(gameBoardWidth, gameBoardHeight, gameBoardHorizontalMargin, DEFAULT_RADIUS_IN_PX,
-                DEFAULT_SPEED_IN_PX_PER_MS, DEFAULT_COLOR);
     }
 
 
@@ -71,16 +56,14 @@ public class PongBall implements GameObjects.Ball {
     }
 
     @Override
-    public int checkIfHitSideWall(int gameBoardWidth, int gameBoardHorizontalMargin) {
+    public int checkIfPointScored(int gameBoardWidth, int gameBoardHorizontalMargin) {
 
         // Check left wall
         if (mCenterX - mRadiusInPx <= gameBoardHorizontalMargin) {
-            mColor = COLOR_ON_LEFT_RIGHT_WALL_HIT;
             return GameObjects.Scene.LEFT_WALL_HIT;
         }
         // Check right wall
         else if (mCenterX + mRadiusInPx >= gameBoardHorizontalMargin + gameBoardWidth) {
-            mColor = COLOR_ON_LEFT_RIGHT_WALL_HIT;
             return GameObjects.Scene.RIGHT_WALL_HIT;
         }
         else {
@@ -98,6 +81,11 @@ public class PongBall implements GameObjects.Ball {
     @Override
     public void setDirection(double directionInDegrees) {
         mDirection.setDirectionInDegrees(directionInDegrees);
+    }
+
+    @Override
+    public void setColor(int color) {
+        mColor = color;
     }
 
 

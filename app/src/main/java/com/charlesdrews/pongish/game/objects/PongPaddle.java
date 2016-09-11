@@ -14,11 +14,7 @@ public class PongPaddle implements GameObjects.Paddle {
 
     // ===================================== Constants ==========================================
 
-    private static final int DEFAULT_COLOR = Color.WHITE;
-    private static final float DEFAULT_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT = 0.2f;
-    private static final float DEFAULT_WIDTH_IN_PX = 20f;
     private static final float DEFAULT_OUTSIDE_MARGIN = 20f;
-
     private static final float MAXIMUM_SPEED_IN_PX_PER_MS = 1_000f;
 
 
@@ -42,20 +38,20 @@ public class PongPaddle implements GameObjects.Paddle {
      *                                  game board for the user's thumbs.
      * @param paddleColor is an int representation of the paddle's desired color.
      */
-    public PongPaddle(final int paddlePosition, final float paddleHeight, final int gameBoardWidth,
-                      final int gameBoardHeight, final int gameBoardHorizontalMargin,
-                      final int paddleColor) {
+    public PongPaddle(final int paddlePosition, final float paddleWidth, final float paddleHeight,
+                      final int gameBoardWidth, final int gameBoardHeight,
+                      final int gameBoardHorizontalMargin, final int paddleColor) {
 
         // Set left and right coordinates based on paddle type, or throw exception if invalid type
         if (paddlePosition == GameObjects.Scene.LEFT_PADDLE) {
             mPaddlePosition = paddlePosition;
             mLeftX = gameBoardHorizontalMargin + DEFAULT_OUTSIDE_MARGIN;
-            mRightX = mLeftX + DEFAULT_WIDTH_IN_PX;
+            mRightX = mLeftX + paddleWidth;
         }
         else if (paddlePosition == GameObjects.Scene.RIGHT_PADDLE) {
             mPaddlePosition = paddlePosition;
             mRightX = gameBoardHorizontalMargin + gameBoardWidth - DEFAULT_OUTSIDE_MARGIN;
-            mLeftX = mRightX - DEFAULT_WIDTH_IN_PX;
+            mLeftX = mRightX - paddleWidth;
         }
         else {
             throw new IllegalArgumentException("paddlePosition must be either" +
@@ -66,22 +62,6 @@ public class PongPaddle implements GameObjects.Paddle {
         mBottomY = mTopY + paddleHeight;
 
         mColor = paddleColor;
-    }
-
-    /**
-     * Instantiate a new Paddle with default height and color, and set its position at the left or
-     * right of the game board.
-     *
-     * @param paddlePosition must be GameObjects.Scene.LEFT_PADDLE or
-     *                       GameObjects.Scene.RIGHT_PADDLE.
-     * @param gameBoardWidth is the width in pixels of the game board.
-     * @param gameBoardHeight is the height in pixels of the game board.
-     */
-    public PongPaddle(final int paddlePosition, final int gameBoardWidth,
-                      final int gameBoardHeight, final int gameBoardHorizontalMargin) {
-        this(paddlePosition,
-                ((float) gameBoardHeight) * DEFAULT_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
-                gameBoardWidth, gameBoardHeight, gameBoardHorizontalMargin, DEFAULT_COLOR);
     }
 
 

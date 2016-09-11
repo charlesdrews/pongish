@@ -2,7 +2,6 @@ package com.charlesdrews.pongish.game.objects;
 
 import android.graphics.Color;
 import android.os.Parcel;
-import android.util.Log;
 
 import com.charlesdrews.pongish.game.GameEngine;
 
@@ -19,13 +18,22 @@ public class PongScene implements GameObjects.Scene {
 
     // =================================== Constants =============================================
 
-    private static final String TAG = "PongScene";
-
     private static final int DEFAULT_BACKGROUND_COLOR = Color.BLACK;
+    private static final int HORIZONTAL_THUMB_MARGIN_IN_PX = 200;
 
-    public static final int HORIZONTAL_THUMB_MARGIN_IN_PX = 200;
+    private static final int PADDLE_COLOR = Color.WHITE;
+    private static final float PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT = 0.2f;
+    private static final float PADDLE_WIDTH_IN_PX = 20f;
 
-    private static final double MIN_ABS_VAL_DEG_AFTER_PADDLE_COLLISION = 5d;
+    private static final int NORMAL_BALL_COLOR = Color.WHITE;
+    private static final float NORMAL_BALL_RADIUS_IN_PX = 30f;
+    private static final float NORMAL_BALL_SPEED_IN_PX_PER_MS = 0.8f;
+
+    private static final float BALL_SPEED_INCREASE_ON_PADDLE_HIT = 0.02f;
+
+    private static final int BALL_COLOR_ON_POINT_SCORED = Color.RED;
+
+    private static final double MIN_ABS_VAL_DEG_AFTER_PADDLE_COLLISION = 10d;
     private static final double HALF_ABS_VAL_RANGE_AFTER_PADDLE_COLLISION =
             (180d - 2d * MIN_ABS_VAL_DEG_AFTER_PADDLE_COLLISION) / 2d;
 
@@ -36,6 +44,7 @@ public class PongScene implements GameObjects.Scene {
     private GameObjects.Paddle mLeftPaddle, mRightPaddle;
     private GameObjects.Ball mNormalBall;
     private List<GameObjects.Ball> mBonusBalls;
+    private int consecutivePaddleHits = 0;
 
 
     // =================================== Constructor ==========================================
@@ -47,14 +56,7 @@ public class PongScene implements GameObjects.Scene {
         mGameBoardHorizontalMargin = HORIZONTAL_THUMB_MARGIN_IN_PX;
         mBackgroundColor = gameBoardColor;
 
-        mLeftPaddle = new PongPaddle(GameObjects.Scene.LEFT_PADDLE, mGameBoardWidth,
-                mGameBoardHeight, mGameBoardHorizontalMargin);
-        mRightPaddle = new PongPaddle(GameObjects.Scene.RIGHT_PADDLE, mGameBoardWidth,
-                mGameBoardHeight, mGameBoardHorizontalMargin);
-
-        mNormalBall = new PongBall(mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin);
-
-        mBonusBalls = new CopyOnWriteArrayList<>();
+        initializeGameObjects();
     }
 
     public PongScene(int gameBoardWidth, int gameBoardHeight) {
@@ -79,8 +81,6 @@ public class PongScene implements GameObjects.Scene {
 
         // Move normal ball (update direction if paddle hit, otherwise check if side wall hit)
         boolean sideWallHit = moveBallAndCheckResult(mNormalBall, millisSinceLastUpdate);
-
-        Log.d(TAG, "updateGameObjectPositions: normal ball x = " + mNormalBall.getCenterX());
 
         // Do the same for each bonus ball
         for (GameObjects.Ball ball : mBonusBalls) {
@@ -121,12 +121,7 @@ public class PongScene implements GameObjects.Scene {
 
     @Override
     public void resetAfterPointScored() {
-        Log.d(TAG, "resetAfterPointScored: ");
-        mBonusBalls.clear();
-        mNormalBall = new PongBall(mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin);
-
-        Log.d(TAG, "resetAfterPointScored: normal ball x = " + mNormalBall.getCenterX());
-        //TODO - reset paddles too?
+        initializeGameObjects();
     }
 
 
@@ -161,6 +156,27 @@ public class PongScene implements GameObjects.Scene {
 
     // ================================ Helper methods ===========================================
 
+
+    private void initializeGameObjects() {
+        mLeftPaddle = new PongPaddle(LEFT_PADDLE, PADDLE_WIDTH_IN_PX,
+                mGameBoardHeight * PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
+                mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, PADDLE_COLOR);
+
+        mRightPaddle = new PongPaddle(RIGHT_PADDLE, PADDLE_WIDTH_IN_PX,
+                mGameBoardHeight * PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
+                mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, PADDLE_COLOR);
+
+        mNormalBall = new PongBall(mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin,
+                NORMAL_BALL_RADIUS_IN_PX, NORMAL_BALL_SPEED_IN_PX_PER_MS, NORMAL_BALL_COLOR);
+
+        if (mBonusBalls == null) {
+            mBonusBalls = new CopyOnWriteArrayList<>();
+        }
+        else {
+            mBonusBalls.clear();
+        }
+    }
+
     private double getDirectionAfterPaddleCollision(int paddlePosition,
                                                    float collisionLocation) {
 
@@ -190,14 +206,18 @@ public class PongScene implements GameObjects.Scene {
         // Check for collision with left paddle
         float collision = mLeftPaddle.getRelativeCollisionLocation(ball);
         if (collision != NO_PADDLE_HIT) {
+            consecutivePaddleHits += 1;
             ball.setDirection(getDirectionAfterPaddleCollision(LEFT_PADDLE, collision));
+            ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT);
             return true;
         }
         else {
             // If no collision with left paddle, check right paddle
             collision = mRightPaddle.getRelativeCollisionLocation(ball);
             if (collision != NO_PADDLE_HIT) {
+                consecutivePaddleHits += 1;
                 ball.setDirection(getDirectionAfterPaddleCollision(RIGHT_PADDLE, collision));
+                ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT);
                 return true;
             }
         }
@@ -213,14 +233,20 @@ public class PongScene implements GameObjects.Scene {
         if (!checkForPaddleCollisionsAndUpdateBall(mNormalBall)) {
 
             // If the ball hasn't hit either paddle, check if it hit the left or right wall
-            int hit = mNormalBall.checkIfHitSideWall(mGameBoardWidth, mGameBoardHorizontalMargin);
+            int hit = mNormalBall.checkIfPointScored(mGameBoardWidth, mGameBoardHorizontalMargin);
 
             // If a side wall was hit, return true so the game engine knows to pause the loop
             switch (hit) {
                 case GameObjects.Scene.LEFT_WALL_HIT:
+                    ball.setColor(BALL_COLOR_ON_POINT_SCORED);
+                    consecutivePaddleHits = 0;
                     return true;
+
                 case GameObjects.Scene.RIGHT_WALL_HIT:
+                    ball.setColor(BALL_COLOR_ON_POINT_SCORED);
+                    consecutivePaddleHits = 0;
                     return true;
+
                 default:
                     return false;
             }

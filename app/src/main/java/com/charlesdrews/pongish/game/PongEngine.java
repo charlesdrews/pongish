@@ -18,6 +18,8 @@ public class PongEngine implements GameEngine.Engine {
     // ==================================== Constants ============================================
     private static final String TAG = "PongEngine";
 
+    private static final long PAUSE_AFTER_SCORE_IN_MS = 2_500L;
+
     private static final String FPS_TEMPLATE = "FPS: %d";
     private static final int FPS_TEXT_COLOR = Color.WHITE;
     private static final float FPS_TEXT_SIZE = 40f;
@@ -141,12 +143,10 @@ public class PongEngine implements GameEngine.Engine {
 
             // If a point was scored, pause the game temporarily
             if (pointScored) {
-                Log.d(TAG, "run: point scored");
                 mScene.resetAfterPointScored();
 
                 try {
-                    Log.d(TAG, "run: sleeping...");
-                    Thread.sleep(2_000L);
+                    Thread.sleep(PAUSE_AFTER_SCORE_IN_MS);
                 } catch (InterruptedException e) {
                     Log.e(TAG, "Exception while sleeping game loop in run() after point scored", e);
                 }

@@ -123,7 +123,7 @@ public interface GameObjects {
          * @return PongScene.NO_WALL_HIT (0), PongScene.LEFT_WALL_HIT (1),
          * or PongScene.RIGHT_WALL_HIT (2).
          */
-        int checkIfHitSideWall(final int gameBoardWidth, final int gameBoardHorizontalMargin);
+        int checkIfPointScored(final int gameBoardWidth, final int gameBoardHorizontalMargin);
 
         /**
          * Increase or decrease speed by the given amount, depending on whether it is +/-.
@@ -139,6 +139,13 @@ public interface GameObjects {
          *                           -90° = left, and 180°/-180° = down.
          */
         void setDirection(double directionInDegrees);
+
+        /**
+         * Update the Ball's color to the specified color.
+         *
+         * @param color is the int representation of the desired color.
+         */
+        void setColor(int color);
     }
 
     /**
