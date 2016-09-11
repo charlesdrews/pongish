@@ -131,13 +131,26 @@ public class PongEngine implements GameEngine.Engine {
 
             // Update item positions. Use the last frame's rendering time as an estimate for how
             // long it will take to render this frame.
-            mScene.updateGameObjectPositions(mLastFrameRenderTimeInMillis);
+            boolean pointScored = mScene.updateGameObjectPositions(mLastFrameRenderTimeInMillis);
 
             // Draw the frame
             drawFrame();
 
             // Track frame rendering time
             mLastFrameRenderTimeInMillis = System.currentTimeMillis() - renderStartTimeInMillis;
+
+            // If a point was scored, pause the game temporarily
+            if (pointScored) {
+                Log.d(TAG, "run: point scored");
+                mScene.resetAfterPointScored();
+
+                try {
+                    Log.d(TAG, "run: sleeping...");
+                    Thread.sleep(2_000L);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Exception while sleeping game loop in run() after point scored", e);
+                }
+            }
         }
     }
 }

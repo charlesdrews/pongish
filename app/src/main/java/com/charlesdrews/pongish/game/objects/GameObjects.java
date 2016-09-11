@@ -23,11 +23,11 @@ public interface GameObjects {
         int LEFT_PADDLE = 0;
         int RIGHT_PADDLE = 1;
 
-        float NO_PADDLE_COLLISION = -2f;
+        float NO_PADDLE_HIT = -2f;
 
-        int NO_COLLISION = 0;
-        int LEFT_WALL_COLLISION = 1;
-        int RIGHT_WALL_COLLISION = 2;
+        int NO_WALL_HIT = 0;
+        int LEFT_WALL_HIT = 1;
+        int RIGHT_WALL_HIT = 2;
 
         /**
          * Move the specified paddle by the specified amount.
@@ -41,8 +41,9 @@ public interface GameObjects {
          * Move all game objects the distance they should travel in the specified amount of time.
          *
          * @param millisSinceLastUpdate is the time delta for the movement.
+         * @return true if a point was scored and the game loop needs to pause, else false.
          */
-        void updateGameObjectPositions(final long millisSinceLastUpdate);
+        boolean updateGameObjectPositions(final long millisSinceLastUpdate);
 
         /**
          * Retrieve the background color to use for this Scene.
@@ -64,6 +65,10 @@ public interface GameObjects {
          */
         List<GameEngine.RectToRender> getRectsToRender();
 
+        /**
+         * Start a new normal game ball after a point is scored.
+         */
+        void resetAfterPointScored();
     }
 
     /**
@@ -92,7 +97,7 @@ public interface GameObjects {
          * paddle, 0.0 indicating a collision with the exact center of the paddle, and -1.0
          * representing a collision with the exact bottom of the paddle, and proportional values
          * for positions in between. If no collision detected, will return
-         * PongScene.NO_PADDLE_COLLISION (-2f).
+         * PongScene.NO_PADDLE_HIT (-2f).
          */
         float getRelativeCollisionLocation(@NonNull final Ball ball);
     }
@@ -113,18 +118,19 @@ public interface GameObjects {
         /**
          * Determine whether the ball has hit either the left or right side walls.
          *
-         * @param rightWallXCoordinate is equivalent to the game/scene's width.
-         * @return PongScene.NO_COLLISION (0), PongScene.LEFT_WALL_COLLISION (1),
-         * or PongScene.RIGHT_WALL_COLLISION (2).
+         * @param gameBoardWidth is the width of the game board in pixels.
+         * @param gameBoardHorizontalMargin is the width of the thumb margin in pixels.
+         * @return PongScene.NO_WALL_HIT (0), PongScene.LEFT_WALL_HIT (1),
+         * or PongScene.RIGHT_WALL_HIT (2).
          */
-        int checkIfHitSideWall(final float rightWallXCoordinate);
+        int checkIfHitSideWall(final int gameBoardWidth, final int gameBoardHorizontalMargin);
 
         /**
          * Increase or decrease speed by the given amount, depending on whether it is +/-.
          *
-         * @param deltaSpeedInPxPerSecond is the desired change in speed, either + or -.
+         * @param deltaSpeedInPxPerMs is the desired change in speed, either + or -.
          */
-        void changeSpeed(final float deltaSpeedInPxPerSecond);
+        void changeSpeed(final float deltaSpeedInPxPerMs);
 
         /**
          * Update the Ball's direction to the specified degrees.

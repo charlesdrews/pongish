@@ -38,20 +38,23 @@ public class PongPaddle implements GameObjects.Paddle {
      * @param paddleHeight is the height in pixels of the paddle's desired height.
      * @param gameBoardWidth is the width in pixels of the game board.
      * @param gameBoardHeight is the height in pixels of the game board.
+     * @param gameBoardHorizontalMargin is the width in pixels of the space on either side of the
+     *                                  game board for the user's thumbs.
      * @param paddleColor is an int representation of the paddle's desired color.
      */
     public PongPaddle(final int paddlePosition, final float paddleHeight, final int gameBoardWidth,
-                      final int gameBoardHeight, final int paddleColor) {
+                      final int gameBoardHeight, final int gameBoardHorizontalMargin,
+                      final int paddleColor) {
 
         // Set left and right coordinates based on paddle type, or throw exception if invalid type
         if (paddlePosition == GameObjects.Scene.LEFT_PADDLE) {
             mPaddlePosition = paddlePosition;
-            mLeftX = DEFAULT_OUTSIDE_MARGIN;
+            mLeftX = gameBoardHorizontalMargin + DEFAULT_OUTSIDE_MARGIN;
             mRightX = mLeftX + DEFAULT_WIDTH_IN_PX;
         }
         else if (paddlePosition == GameObjects.Scene.RIGHT_PADDLE) {
             mPaddlePosition = paddlePosition;
-            mRightX = gameBoardWidth - DEFAULT_OUTSIDE_MARGIN;
+            mRightX = gameBoardHorizontalMargin + gameBoardWidth - DEFAULT_OUTSIDE_MARGIN;
             mLeftX = mRightX - DEFAULT_WIDTH_IN_PX;
         }
         else {
@@ -75,10 +78,10 @@ public class PongPaddle implements GameObjects.Paddle {
      * @param gameBoardHeight is the height in pixels of the game board.
      */
     public PongPaddle(final int paddlePosition, final int gameBoardWidth,
-                      final int gameBoardHeight) {
+                      final int gameBoardHeight, final int gameBoardHorizontalMargin) {
         this(paddlePosition,
                 ((float) gameBoardHeight) * DEFAULT_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
-                gameBoardWidth, gameBoardHeight, DEFAULT_COLOR);
+                gameBoardWidth, gameBoardHeight, gameBoardHorizontalMargin, DEFAULT_COLOR);
     }
 
 
@@ -138,7 +141,7 @@ public class PongPaddle implements GameObjects.Paddle {
             return -((ball.getCenterY() - paddleCenterY) / paddleHalfHeight);
         }
         else {
-            return GameObjects.Scene.NO_PADDLE_COLLISION;
+            return GameObjects.Scene.NO_PADDLE_HIT;
         }
     }
 

@@ -17,6 +17,8 @@ public class PongBall implements GameObjects.Ball {
     private static final float DEFAULT_RADIUS_IN_PX = 30f;
     private static final float DEFAULT_SPEED_IN_PX_PER_MS = 1f;
 
+    private static final int COLOR_ON_LEFT_RIGHT_WALL_HIT = Color.RED;
+
 
     // ================================= Member variables =======================================
 
@@ -27,10 +29,11 @@ public class PongBall implements GameObjects.Ball {
 
     // =================================== Constructor ==========================================
 
-    public PongBall(final int gameBoardWidth, final int gameBoardHeight, final float radiusInPx,
+    public PongBall(final int gameBoardWidth, final int gameBoardHeight,
+                    final int gameBoardHorizontalMargin, final float radiusInPx,
                     final float speedInPxPerMs, final int color) {
-        mCenterX = ((float) gameBoardWidth) / 2f;
-        mCenterY = ((float) gameBoardHeight) / 2f;
+        mCenterX = gameBoardHorizontalMargin + gameBoardWidth / 2f;
+        mCenterY = gameBoardHeight / 2f;
         mRadiusInPx = radiusInPx;
         mSpeedInPxPerMs = speedInPxPerMs;
         mColor = color;
@@ -38,9 +41,10 @@ public class PongBall implements GameObjects.Ball {
         mDirection = new BallDirection();
     }
 
-    public PongBall(final int gameBoardWidth, final int gameBoardHeight) {
-        this(gameBoardWidth, gameBoardHeight, DEFAULT_RADIUS_IN_PX, DEFAULT_SPEED_IN_PX_PER_MS,
-                DEFAULT_COLOR);
+    public PongBall(final int gameBoardWidth, final int gameBoardHeight,
+                    final int gameBoardHorizontalMargin) {
+        this(gameBoardWidth, gameBoardHeight, gameBoardHorizontalMargin, DEFAULT_RADIUS_IN_PX,
+                DEFAULT_SPEED_IN_PX_PER_MS, DEFAULT_COLOR);
     }
 
 
@@ -67,14 +71,28 @@ public class PongBall implements GameObjects.Ball {
     }
 
     @Override
-    public int checkIfHitSideWall(float rightWallXCoordinate) {
-        //TODO
-        return 0;
+    public int checkIfHitSideWall(int gameBoardWidth, int gameBoardHorizontalMargin) {
+
+        // Check left wall
+        if (mCenterX - mRadiusInPx <= gameBoardHorizontalMargin) {
+            mColor = COLOR_ON_LEFT_RIGHT_WALL_HIT;
+            return GameObjects.Scene.LEFT_WALL_HIT;
+        }
+        // Check right wall
+        else if (mCenterX + mRadiusInPx >= gameBoardHorizontalMargin + gameBoardWidth) {
+            mColor = COLOR_ON_LEFT_RIGHT_WALL_HIT;
+            return GameObjects.Scene.RIGHT_WALL_HIT;
+        }
+        else {
+            return GameObjects.Scene.NO_WALL_HIT;
+        }
     }
 
     @Override
-    public void changeSpeed(float deltaSpeedInPxPerSecond) {
-        //TODO
+    public void changeSpeed(float deltaSpeedInPxPerMs) {
+        if (mSpeedInPxPerMs != 0) {
+            mSpeedInPxPerMs += deltaSpeedInPxPerMs;
+        }
     }
 
     @Override
