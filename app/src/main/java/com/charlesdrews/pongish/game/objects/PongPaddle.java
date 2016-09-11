@@ -126,7 +126,7 @@ public class PongPaddle implements GameObjects.Paddle {
     }
 
 
-    // ========================= GameEngine.RectToRender methods ================================
+    // ========================= GameEngine.RectangleToRender methods ================================
 
     @Override
     public float getLeftX() {

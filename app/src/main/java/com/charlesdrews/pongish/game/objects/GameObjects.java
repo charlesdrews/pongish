@@ -63,7 +63,14 @@ public interface GameObjects {
          *
          * @return the rectangles included in the PongScene.
          */
-        List<GameEngine.RectToRender> getRectsToRender();
+        List<GameEngine.RectangleToRender> getRectanglesToRender();
+
+        /**
+         * Retrieve a list of vertical lines for the Renderer to draw.
+         *
+         * @return the vertical lines includes in the pong scene.
+         */
+        List<GameEngine.VerticalLineToRender> getVerticalLinesToRender();
 
         /**
          * Start a new normal game ball after a point is scored.
@@ -74,7 +81,7 @@ public interface GameObjects {
     /**
      * Paddles will appear on the left and right of the game board and will reflect balls.
      */
-    interface Paddle extends GameEngine.RectToRender, Parcelable {
+    interface Paddle extends GameEngine.RectangleToRender, Parcelable {
 
         /**
          * Move up (negative deltaY) or down (positive deltaY) and ensure paddle stays on screen.

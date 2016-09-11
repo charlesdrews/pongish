@@ -21,6 +21,9 @@ public class PongScene implements GameObjects.Scene {
     private static final int DEFAULT_BACKGROUND_COLOR = Color.BLACK;
     private static final int HORIZONTAL_THUMB_MARGIN_IN_PX = 200;
 
+    private static final int CENTER_LINE_COLOR = Color.WHITE;
+    private static final int END_LINE_COLOR = Color.WHITE;
+
     private static final int PADDLE_COLOR = Color.WHITE;
     private static final float PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT = 0.2f;
     private static final float PADDLE_WIDTH_IN_PX = 20f;
@@ -45,6 +48,10 @@ public class PongScene implements GameObjects.Scene {
     private GameObjects.Ball mNormalBall;
     private List<GameObjects.Ball> mBonusBalls;
     private int consecutivePaddleHits = 0;
+
+    private List<GameEngine.CircleToRender> mCirclesToRender;
+    private List<GameEngine.RectangleToRender> mRectanglesToRender;
+    private List<GameEngine.VerticalLineToRender> mVerticalLinesToRender;
 
 
     // =================================== Constructor ==========================================
@@ -87,6 +94,8 @@ public class PongScene implements GameObjects.Scene {
             sideWallHit = sideWallHit || moveBallAndCheckResult(ball, millisSinceLastUpdate);
         }
 
+        //TODO - if consecutivePaddleHits exceeds a threshold, add bonus balls?
+
         return sideWallHit;
     }
 
@@ -98,25 +107,26 @@ public class PongScene implements GameObjects.Scene {
     @Override
     public List<GameEngine.CircleToRender> getCirclesToRender() {
 
-        List<GameEngine.CircleToRender> circles = new ArrayList<>(mBonusBalls.size() + 1);
+        // Clear list of circles to render, in case it contains any expired bonus balls.
+        mCirclesToRender.clear();
 
-        circles.add(mNormalBall);
+        // Add normal ball and bonus balls (if any exist).
+        mCirclesToRender.add(mNormalBall);
         for (GameObjects.Ball ball : mBonusBalls) {
-            circles.add(ball);
+            mCirclesToRender.add(ball);
         }
 
-        return circles;
+        return mCirclesToRender;
     }
 
     @Override
-    public List<GameEngine.RectToRender> getRectsToRender() {
+    public List<GameEngine.RectangleToRender> getRectanglesToRender() {
+        return mRectanglesToRender;
+    }
 
-        List<GameEngine.RectToRender> rects = new ArrayList<>(2);
-
-        rects.add(mLeftPaddle);
-        rects.add(mRightPaddle);
-
-        return rects;
+    @Override
+    public List<GameEngine.VerticalLineToRender> getVerticalLinesToRender() {
+        return mVerticalLinesToRender;
     }
 
     @Override
@@ -157,7 +167,14 @@ public class PongScene implements GameObjects.Scene {
     // ================================ Helper methods ===========================================
 
 
+    /**
+     * Add a left paddle, a right paddle, and the normal ball to the scene. If any bonus balls
+     * exist, remove them. Also prepare the lists of circles and rectangles to return to the
+     * renderer.
+     */
     private void initializeGameObjects() {
+
+        // Add left & right paddles and the normal ball.
         mLeftPaddle = new PongPaddle(LEFT_PADDLE, PADDLE_WIDTH_IN_PX,
                 mGameBoardHeight * PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
                 mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, PADDLE_COLOR);
@@ -169,16 +186,51 @@ public class PongScene implements GameObjects.Scene {
         mNormalBall = new PongBall(mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin,
                 NORMAL_BALL_RADIUS_IN_PX, NORMAL_BALL_SPEED_IN_PX_PER_MS, NORMAL_BALL_COLOR);
 
+        // Instantiate an empty list for bonus balls, or if one exists, empty it.
         if (mBonusBalls == null) {
             mBonusBalls = new CopyOnWriteArrayList<>();
         }
         else {
             mBonusBalls.clear();
         }
+
+        // Instantiate empty list to hold balls as circles to return to the renderer.
+        mCirclesToRender = new ArrayList<>();
+
+        // Instantiate and initialize list of paddles as rectangles to return to the renderer.
+        mRectanglesToRender = new ArrayList<>(2);
+        mRectanglesToRender.add(mLeftPaddle);
+        mRectanglesToRender.add(mRightPaddle);
+
+        // Instantiate and initialize list of vertical lines to return to the renderer.
+        mVerticalLinesToRender = new ArrayList<>(3);
+
+        // Left end line
+        mVerticalLinesToRender.add(new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX, 0,
+                mGameBoardHeight, END_LINE_COLOR, false));
+
+        // Right end line
+        mVerticalLinesToRender.add(new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth,
+                0, mGameBoardHeight, END_LINE_COLOR, false));
+
+        // Center line
+        mVerticalLinesToRender.add(new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth / 2f,
+                0, mGameBoardHeight, CENTER_LINE_COLOR, true));
+
     }
 
-    private double getDirectionAfterPaddleCollision(int paddlePosition,
-                                                   float collisionLocation) {
+    /**
+     * Calculate the new direction for a ball that has struck the specified paddle in the given
+     * location.
+     *
+     * @param paddlePosition is either GameObjects.Scene.LEFT_PADDLE or
+     *                       GameObjects.Scene.RIGHT_PADDLE.
+     * @param collisionLocation ranges from -1.0, bottom of paddle, to 1.0, top of paddle, with
+     *                          0.0 being the exact center of the paddle.
+     * @return a new ball direction in degrees.
+     */
+    private double getDirectionAfterPaddleCollision(final int paddlePosition,
+                                                    final float collisionLocation) {
 
         double absoluteValueNewDirection = 90d +
                 (-collisionLocation) * HALF_ABS_VAL_RANGE_AFTER_PADDLE_COLLISION;
@@ -224,6 +276,15 @@ public class PongScene implements GameObjects.Scene {
         return false;
     }
 
+    /**
+     * Take the following steps:
+     *   1) Move the given Ball. Its move() method handles collisions with top/bottom walls.
+     *   2) Check if it hit a paddle and if so, change it's direction accordingly.
+     *   3) If no paddle hit, check if a point was scored; return true if yes.
+     * @param ball is the Ball whose position will be updated.
+     * @param millisSinceLastUpdate is the time in milliseconds since the ball was last moved.
+     * @return true if a point was scored, else false.
+     */
     private boolean moveBallAndCheckResult(GameObjects.Ball ball, long millisSinceLastUpdate) {
 
         // Start by updating the ball's position

@@ -67,16 +67,16 @@ public interface GameContract {
     interface Presenter {
 
         /**
-         * Set a reference to the given View in the Presenter.
+         * Set a reference to the given ViewActivity implementation in the Presenter.
          *
-         * @param view is the instance to which a reference will be saved in the Presenter.
+         * @param activity is the instance to which a reference will be saved.
          */
-        void bindViews(@NonNull final View view, @NonNull final ViewActivity activity);
+        void bindViewActivity(@NonNull final ViewActivity activity);
 
         /**
-         * Remove the reference to the View instance from the Presenter.
+         * Remove the reference to the ViewActivity instance from the Presenter.
          */
-        void unbindViews();
+        void unbindViewActivity();
 
         /**
          * Set a reference to the given Renderer in the Presenter.

@@ -22,7 +22,6 @@ public class PongPresenter implements GameContract.Presenter {
 
     // ===================================== Member variables ====================================
 
-    private GameContract.View mGameView;
     private GameContract.ViewActivity mViewActivity;
     private GameEngine.Renderer mRenderer;
     private GameEngine.Engine mEngine;
@@ -41,15 +40,12 @@ public class PongPresenter implements GameContract.Presenter {
     // ============================== GameContract.Presenter methods =============================
 
     @Override
-    public void bindViews(@NonNull GameContract.View view,
-                          @NonNull GameContract.ViewActivity activity) {
-        mGameView = view;
+    public void bindViewActivity(@NonNull GameContract.ViewActivity activity) {
         mViewActivity = activity;
     }
 
     @Override
-    public void unbindViews() {
-        mGameView = null;
+    public void unbindViewActivity() {
         mViewActivity = null;
     }
 

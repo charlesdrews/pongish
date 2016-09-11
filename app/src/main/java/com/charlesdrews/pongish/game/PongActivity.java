@@ -7,7 +7,7 @@ import android.widget.ImageView;
 
 import com.charlesdrews.pongish.R;
 
-public class GameActivity extends AppCompatActivity implements GameContract.ViewActivity,
+public class PongActivity extends AppCompatActivity implements GameContract.ViewActivity,
         View.OnClickListener {
 
     // ==================================== Member variables =====================================
@@ -26,21 +26,22 @@ public class GameActivity extends AppCompatActivity implements GameContract.View
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_game);
+        setContentView(R.layout.activity_pong);
 
-        // Keep a reference to savedInstanceState so it can be retrieved later
+        // Keep a reference to savedInstanceState so it can be retrieved later.
         mSavedGameState = savedInstanceState;
 
-        // Initialize view and presenter
+        // Instantiate the presenter and give it a reference to this ViewActivity.
         mPresenter = new PongPresenter();
+        mPresenter.bindViewActivity(this);
+
+        // Give the presenter a reference to the game view, which is pulling double duty as
+        // both GameContract.View and as GameEngine.Renderer.
         mGameView = (PongView) findViewById(R.id.game_view);
-
-        // Bind them to each other
-        mPresenter.bindViews(mGameView, this);
-        mGameView.bindPresenter(mPresenter);
-
-        // Bind the renderer to the presenter. In this case, mGameView is also the renderer.
         mPresenter.bindRenderer((GameEngine.Renderer) mGameView);
+
+        // Give the game view a reference to the presenter.
+        mGameView.bindPresenter(mPresenter);
 
         mBindingsEstablished = true;
 
@@ -58,7 +59,7 @@ public class GameActivity extends AppCompatActivity implements GameContract.View
 
         // If returning after activity was paused, re-establish bindings
         if (!mBindingsEstablished) {
-            mPresenter.bindViews(mGameView, this);
+            mPresenter.bindViewActivity(this);
             mPresenter.bindRenderer((GameEngine.Renderer) mGameView);
             mGameView.bindPresenter(mPresenter);
             mBindingsEstablished = true;
@@ -77,7 +78,7 @@ public class GameActivity extends AppCompatActivity implements GameContract.View
 
         mPresenter.onActivityPause();
 
-        mPresenter.unbindViews();
+        mPresenter.unbindViewActivity();
         mPresenter.unbindRenderer();
         mGameView.unbindPresenter();
         mBindingsEstablished = false;

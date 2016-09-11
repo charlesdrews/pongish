@@ -2,7 +2,9 @@ package com.charlesdrews.pongish.game;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
@@ -11,7 +13,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 /**
- * Provide the View and Renderer functionality.
+ * Provide the GameContract.View and GameEngine.Renderer functionality by extending SurfaceView.
  *
  * Created by charlie on 9/10/16.
  */
@@ -27,7 +29,8 @@ public class PongView extends SurfaceView implements SurfaceHolder.Callback, Gam
     private SurfaceHolder mHolder;
     private int mSurfaceWidth = 0;
     private Canvas mCanvas;
-    private Paint mPaint = new Paint();
+    private Paint mPaint;
+    private DashPathEffect mDashPathEffect;
 
     private int mLeftSideActivePointerId = MotionEvent.INVALID_POINTER_ID;
     private boolean mLeftSideMoveInProgress = false;
@@ -48,6 +51,11 @@ public class PongView extends SurfaceView implements SurfaceHolder.Callback, Gam
 
         mHolder = getHolder();
         mHolder.addCallback(this);
+
+        mPaint = new Paint();
+        mPaint.setStrokeWidth(1f);
+
+        mDashPathEffect = new DashPathEffect(new float[]{15f, 15f}, 0f);
     }
 
 
@@ -204,6 +212,18 @@ public class PongView extends SurfaceView implements SurfaceHolder.Callback, Gam
     public void drawRect(float leftX, float topY, float rightX, float bottomY, int color) {
         mPaint.setColor(color);
         mCanvas.drawRect(leftX, topY, rightX, bottomY, mPaint);
+    }
+
+    @Override
+    public void drawVerticalLine(float x, float topY, float bottomY, int color, boolean dashed) {
+        mPaint.setColor(color);
+        if (dashed) {
+            mPaint.setPathEffect(mDashPathEffect);
+        }
+        else {
+            mPaint.setPathEffect(null);
+        }
+        mCanvas.drawLine(x, topY, x, bottomY, mPaint);
     }
 
     @Override

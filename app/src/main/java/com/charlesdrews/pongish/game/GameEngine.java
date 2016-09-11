@@ -88,7 +88,7 @@ public interface GameEngine {
          *
          * @param color of the background as an int
          */
-        void drawBackground(int color);
+        void drawBackground(final int color);
 
         /**
          * Draw a circle in the game area.
@@ -99,19 +99,33 @@ public interface GameEngine {
          * @param radius of the circle in pixels
          * @param color of the circle as an int
          */
-        void drawCircle(float centerX, float centerY, float radius, int color);
+        void drawCircle(final float centerX, final float centerY, final float radius,
+                        final int color);
 
         /**
          * Draw a rectangle in the game area.
          * beginDrawing MUST be called prior, and commitDrawing() MUST be called after.
          *
-         * @param left x coordinate of the rectangle
-         * @param top y coordinate of the rectangle
-         * @param right x coordinate of the rectangle
-         * @param bottom y coordinate of the rectangle
-         * @param color of the rectangle as an int
+         * @param leftX is the x coordinate of the rectangle's left edge.
+         * @param topY is the y coordinate of the rectangles's top edge.
+         * @param rightX is the x coordinate of the rectangle's right edge.
+         * @param bottomY is the y coordinate of the rectangle's bottom edge.
+         * @param color of the rectangle as an int.
          */
-        void drawRect(float leftX, float topY, float rightX, float bottomY, int color);
+        void drawRect(final float leftX, final float topY, final float rightX, final float bottomY,
+                      final int color);
+
+        /**
+         * Draw a vertical line in the game area.
+         *
+         * @param x is the x coordinate of the vertical line.
+         * @param topY is the y coordinate of the top of the line.
+         * @param bottomY is the y coordinate of the bottom of the line.
+         * @param color is the color of the line as an int.
+         * @param dashed indicates whether line should be solid (false) or dashed (true).
+         */
+        void drawVerticalLine(final float x, final float topY, final float bottomY,
+                              final int color, final boolean dashed);
 
         /**
          * Draw the frames per second rate as text in the game area.
@@ -139,11 +153,22 @@ public interface GameEngine {
     /**
      * Simple interface any rectangular game object must implement in order to be drawn to the screen.
      */
-    interface RectToRender {
+    interface RectangleToRender {
         float getLeftX();
         float getTopY();
         float getRightX();
         float getBottomY();
         int getColor();
+    }
+
+    /**
+     * Simple interface any vertical line in the game must implement in order to be drawn on the screen.
+     */
+    interface VerticalLineToRender {
+        float getX();
+        float getTopY();
+        float getBottomY();
+        int getColor();
+        boolean isDashed();
     }
 }

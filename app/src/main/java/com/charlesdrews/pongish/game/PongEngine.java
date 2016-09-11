@@ -33,15 +33,18 @@ public class PongEngine implements GameEngine.Engine {
     private GameObjects.Scene mScene;
 
     private Thread mGameThread;
+    private Runnable mRunnable;
+    private volatile boolean mExecuteGameLoop = false;
     private long mLastFrameRenderTimeInMillis;
-    private boolean mPlaying;
 
 
     // ==================================== Constructor =========================================
 
     public PongEngine() {
-        //TODO
-
+        // This class implements Runnable, so it can be used as the game thread's target.
+        // Keep mRunnable as a variable in case the Runnable implementation is ever moved to
+        // another class.
+        mRunnable = this;
     }
 
 
@@ -68,21 +71,26 @@ public class PongEngine implements GameEngine.Engine {
 
     @Override
     public void startGameExecution() {
-        mPlaying = true;
+        mExecuteGameLoop = true;
 
-        mGameThread = new Thread(this);
+        mGameThread = new Thread(mRunnable);
         mGameThread.start();
     }
 
     @Override
     public void stopGameExecution() {
-        mPlaying = false;
+        mExecuteGameLoop = false;
 
         if (mGameThread != null) {
             try {
+                // Wait for the game thread to complete.
                 mGameThread.join();
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Error joining game thread", e);
+            }
+            catch (InterruptedException e) {
+                Log.e(TAG, "Main thread interrupted while waiting to join the game thread", e);
+
+                // Reset the interrupt flag that was cleared when InterruptedException was thrown.
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -96,21 +104,26 @@ public class PongEngine implements GameEngine.Engine {
             return;
         }
 
-        // Wipe everything by re-drawing background color
+        // Wipe everything by re-drawing the background color.
         mRenderer.drawBackground(mScene.getBackgroundColor());
 
-        // Draw each game item
+        // Draw each game item.
         for (GameEngine.CircleToRender circle : mScene.getCirclesToRender()) {
             mRenderer.drawCircle(circle.getCenterX(), circle.getCenterY(), circle.getRadius(),
                     circle.getColor());
         }
 
-        for (GameEngine.RectToRender rect : mScene.getRectsToRender()) {
+        for (GameEngine.RectangleToRender rect : mScene.getRectanglesToRender()) {
             mRenderer.drawRect(rect.getLeftX(), rect.getTopY(), rect.getRightX(), rect.getBottomY(),
                     rect.getColor());
         }
 
-        // Draw frames per second text
+        for (GameEngine.VerticalLineToRender line : mScene.getVerticalLinesToRender()) {
+            mRenderer.drawVerticalLine(line.getX(), line.getTopY(), line.getBottomY(),
+                    line.getColor(), line.isDashed());
+        }
+
+        // Draw the frames per second as text.
         long framesPerSecond = 0L;
         if (mLastFrameRenderTimeInMillis > 0L) {
             framesPerSecond = 1_000L / mLastFrameRenderTimeInMillis;
@@ -120,35 +133,41 @@ public class PongEngine implements GameEngine.Engine {
                 String.format(Locale.getDefault(), FPS_TEMPLATE, framesPerSecond),
                 FPS_X_COORDINATE, FPS_Y_COORDINATE, FPS_TEXT_SIZE, FPS_TEXT_COLOR);
 
-        // Unlock canvas and post drawings
+        // Unlock the canvas and post the drawings.
         mRenderer.commitDrawing();
     }
 
     @Override
     public void run() {
-        while (mPlaying) {
+        while (mExecuteGameLoop) {
 
-            // Save frame render start time
+            // Save frame render start time.
             long renderStartTimeInMillis = System.currentTimeMillis();
 
             // Update item positions. Use the last frame's rendering time as an estimate for how
             // long it will take to render this frame.
             boolean pointScored = mScene.updateGameObjectPositions(mLastFrameRenderTimeInMillis);
 
-            // Draw the frame
+            // Draw the frame.
             drawFrame();
 
-            // Track frame rendering time
+            // Track frame rendering time.
             mLastFrameRenderTimeInMillis = System.currentTimeMillis() - renderStartTimeInMillis;
 
-            // If a point was scored, pause the game temporarily
+            // If a point was scored, pause the game temporarily.
             if (pointScored) {
                 mScene.resetAfterPointScored();
 
+                // TODO - replace this with a countdown to the new ball
                 try {
                     Thread.sleep(PAUSE_AFTER_SCORE_IN_MS);
                 } catch (InterruptedException e) {
-                    Log.e(TAG, "Exception while sleeping game loop in run() after point scored", e);
+                    Log.e(TAG, "Game thread interrupted while sleeping after point scored", e);
+
+                    // Reset the interrupt flag that was cleared when InterruptedException
+                    // was thrown, then end thread by returning.
+                    Thread.currentThread().interrupt();
+                    return;
                 }
             }
         }

@@ -4,17 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.charlesdrews.pongish.game.GameActivity">
+    tools:context=".game.PongActivity">
 
     <com.charlesdrews.pongish.game.PongView
         android:id="@+id/game_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-    <View
-        android:background="@drawable/dashed_line"
-        android:layout_centerHorizontal="true"
-        android:layout_width="2dp"
         android:layout_height="match_parent"/>
 
     <LinearLayout
