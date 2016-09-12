@@ -4,6 +4,7 @@
     <string name="two_player_game_button">TWO PLAYER GAME</string>
     <string name="one_player_on_right_button">SINGLE PLAYER ON RIGHT</string>
     <string name="one_player_on_left_button">SINGLE PLAYER ON LEFT</string>
+    <string name="demo_mode_button">DEMO MODE</string>
 
     <string name="play_pause_icon_description">Play and pause game icon</string>
     <string name="restart_icon_description">Restart game icon</string>

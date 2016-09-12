@@ -87,6 +87,11 @@ public class PongBall implements GameObjects.Ball {
         mColor = color;
     }
 
+    @Override
+    public double getDirection() {
+        return mDirection.getDirectionInDegrees();
+    }
+
 
     // ========================== GameEngine.CircleToRender methods ==============================
 

@@ -3,6 +3,8 @@ package com.charlesdrews.pongish.game.objects;
 import android.os.Parcel;
 import android.support.annotation.NonNull;
 
+import java.util.Random;
+
 /**
  * Models a paddle that can move up and down vertically, but cannot move horizontally. Can be
  * located at the left or the right side of the screen, and can reflect balls that collide with it.
@@ -16,6 +18,8 @@ public class PongPaddle implements GameObjects.Paddle {
     private static final float DEFAULT_OUTSIDE_MARGIN = 20f;
     private static final float MAXIMUM_HUMAN_PADDLE_SPEED_IN_PX_PER_MS = 1_000f;
     private static final float MAXIMUM_COMPUTER_PADDLE_SPEED_IN_PX_PER_MS = 0.75f;
+
+    private static Random sRandom = new Random();
 
 
     // ================================= Member variables =======================================
@@ -140,7 +144,11 @@ public class PongPaddle implements GameObjects.Paddle {
 
             // Return between 0.0 and 1.0 if ball struck top half, else between 0.0 and -1.0 if
             // ball struck bottom half.
-            return -((ball.getCenterY() - paddleCenterY) / paddleHalfHeight);
+
+            // Add a little extra so the computer isn't too perfect...
+            float extra = sRandom.nextFloat() - 0.05f;
+
+            return (-((ball.getCenterY() - paddleCenterY) / paddleHalfHeight)) + extra;
         }
         else {
             return GameObjects.Scene.NO_PADDLE_HIT;

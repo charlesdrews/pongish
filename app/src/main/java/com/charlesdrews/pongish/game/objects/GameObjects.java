@@ -23,6 +23,7 @@ public interface GameObjects {
         int LEFT_PADDLE = 0;
         int RIGHT_PADDLE = 1;
         int NEITHER_PADDLE = 2;
+        int BOTH_PADDLES = 3;
 
         float NO_PADDLE_HIT = -2f;
 
@@ -187,6 +188,12 @@ public interface GameObjects {
          * @param color is the int representation of the desired color.
          */
         void setColor(int color);
+
+        /**
+         * Retrieve the ball's current direction, with 0 = up, positive = rightward, etc.
+         * @return the direction in degrees.
+         */
+        double getDirection();
     }
 
     /**

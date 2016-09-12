@@ -16,8 +16,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         findViewById(R.id.two_player_game_button).setOnClickListener(this);
-        findViewById(R.id.one_player_right_game).setOnClickListener(this);
-        findViewById(R.id.one_player_left_game).setOnClickListener(this);
+        findViewById(R.id.one_player_right_game_button).setOnClickListener(this);
+        findViewById(R.id.one_player_left_game_button).setOnClickListener(this);
+        findViewById(R.id.demo_mode_button).setOnClickListener(this);
     }
 
     @Override
@@ -32,15 +33,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         GameObjects.Scene.NEITHER_PADDLE);
                 break;
 
-            case R.id.one_player_right_game:
+            case R.id.one_player_right_game_button:
                 intent.putExtra(PongActivity.COMPUTER_CONTROLLED_PADDLE_KEY,
                         GameObjects.Scene.LEFT_PADDLE);
                 break;
 
-            case R.id.one_player_left_game:
+            case R.id.one_player_left_game_button:
                 intent.putExtra(PongActivity.COMPUTER_CONTROLLED_PADDLE_KEY,
                         GameObjects.Scene.RIGHT_PADDLE);
                 break;
+
+            case R.id.demo_mode_button:
+                intent.putExtra(PongActivity.COMPUTER_CONTROLLED_PADDLE_KEY,
+                        GameObjects.Scene.BOTH_PADDLES);
         }
 
         startActivity(intent);

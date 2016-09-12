@@ -174,33 +174,18 @@ public class PongScene implements GameObjects.Scene {
         // Move computer controlled paddle
         switch (mComputerControlledPaddle) {
 
-            case LEFT_PADDLE: {
-                float closestBallX = mNormalBall.getCenterX();
-                float closestBallY = mNormalBall.getCenterY();
-                for (GameObjects.Ball ball : mBonusBalls) {
-                    if (ball.getCenterX() < closestBallX) {
-                        closestBallX = ball.getCenterX();
-                        closestBallY = ball.getCenterY();
-                    }
-                }
-                mLeftPaddle.move(closestBallY - mLeftPaddle.getCenterY(), mGameBoardHeight,
-                        millisSinceLastUpdate);
+            case LEFT_PADDLE:
+                moveComputerControlledPaddle(mLeftPaddle, LEFT_PADDLE, millisSinceLastUpdate);
                 break;
-            }
 
-            case RIGHT_PADDLE: {
-                float closestBallX = mNormalBall.getCenterX();
-                float closestBallY = mNormalBall.getCenterY();
-                for (GameObjects.Ball ball : mBonusBalls) {
-                    if (ball.getCenterX() > closestBallX) {
-                        closestBallX = ball.getCenterX();
-                        closestBallY = ball.getCenterY();
-                    }
-                }
-                mRightPaddle.move(closestBallY - mRightPaddle.getCenterY(), mGameBoardHeight,
-                        millisSinceLastUpdate);
+            case RIGHT_PADDLE:
+                moveComputerControlledPaddle(mRightPaddle, RIGHT_PADDLE, millisSinceLastUpdate);
                 break;
-            }
+
+            case BOTH_PADDLES:
+                moveComputerControlledPaddle(mLeftPaddle, LEFT_PADDLE, millisSinceLastUpdate);
+                moveComputerControlledPaddle(mRightPaddle, RIGHT_PADDLE, millisSinceLastUpdate);
+                break;
         }
 
         return pointScored;
@@ -343,6 +328,11 @@ public class PongScene implements GameObjects.Scene {
             case NEITHER_PADDLE:
                 mLeftPaddle = getNewPaddle(false, LEFT_PADDLE);
                 mRightPaddle = getNewPaddle(false, RIGHT_PADDLE);
+                break;
+
+            case BOTH_PADDLES:
+                mLeftPaddle = getNewPaddle(true, LEFT_PADDLE);
+                mRightPaddle = getNewPaddle(true, RIGHT_PADDLE);
                 break;
 
             default:
@@ -538,5 +528,29 @@ public class PongScene implements GameObjects.Scene {
                     BONUS_BALL_RADIUS_IN_PX, BONUS_BALL_SPEED_IN_PX_PER_MS, color));
         }
         mNeedToAddBonusBalls = false;
+    }
+
+    private void moveComputerControlledPaddle(GameObjects.Paddle paddle, int paddlePosition,
+                                              long millisSinceLastUpdate) {
+
+        float closestBallX = mNormalBall.getCenterX();
+        float closestBallY = mNormalBall.getCenterY();
+
+        for (GameObjects.Ball ball : mBonusBalls) {
+            if (paddlePosition == LEFT_PADDLE && mNormalBall.getDirection() > 0) {
+                if (ball.getCenterX() < closestBallX) {
+                    closestBallX = ball.getCenterX();
+                    closestBallY = ball.getCenterY();
+                }
+            }
+            else if (paddlePosition == RIGHT_PADDLE && mNormalBall.getDirection() < 0) {
+                if (ball.getCenterX() > closestBallX) {
+                    closestBallX = ball.getCenterX();
+                    closestBallY = ball.getCenterY();
+                }
+            }
+        }
+        paddle.move(closestBallY - paddle.getCenterY(), mGameBoardHeight,
+                millisSinceLastUpdate);
     }
 }
