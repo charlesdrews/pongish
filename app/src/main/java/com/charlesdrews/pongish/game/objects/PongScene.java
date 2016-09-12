@@ -2,6 +2,7 @@ package com.charlesdrews.pongish.game.objects;
 
 import android.graphics.Color;
 import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.charlesdrews.pongish.game.GameEngine;
 
@@ -140,12 +141,34 @@ public class PongScene implements GameObjects.Scene {
     // =========================== Parcelable methods & constant ==================================
 
     protected PongScene(Parcel in) {
-        //TODO
+        mGameBoardWidth = in.readInt();
+        mGameBoardHeight = in.readInt();
+        mGameBoardHorizontalMargin = in.readInt();
+        mBackgroundColor = in.readInt();
+        mLeftEndLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
+        mRightEndLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
+        mCenterLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
+        mLeftPaddle = in.readParcelable(GameObjects.Paddle.class.getClassLoader());
+        mRightPaddle = in.readParcelable(GameObjects.Paddle.class.getClassLoader());
+        mNormalBall = in.readParcelable(GameObjects.Ball.class.getClassLoader());
+        mBonusBalls = in.createTypedArrayList(PongBall.CREATOR);
+        consecutivePaddleHits = in.readInt();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        //TODO
+        dest.writeInt(mGameBoardWidth);
+        dest.writeInt(mGameBoardHeight);
+        dest.writeInt(mGameBoardHorizontalMargin);
+        dest.writeInt(mBackgroundColor);
+        dest.writeParcelable(mLeftEndLine, flags);
+        dest.writeParcelable(mRightEndLine, flags);
+        dest.writeParcelable(mCenterLine, flags);
+        dest.writeParcelable(mLeftPaddle, flags);
+        dest.writeParcelable(mRightPaddle, flags);
+        dest.writeParcelable(mNormalBall, flags);
+        dest.writeTypedList(mBonusBalls);
+        dest.writeInt(consecutivePaddleHits);
     }
 
     @Override
@@ -167,7 +190,6 @@ public class PongScene implements GameObjects.Scene {
 
 
     // ================================ Helper methods ===========================================
-
 
     /**
      * Add a left paddle, a right paddle, and the normal ball to the scene. If any bonus balls

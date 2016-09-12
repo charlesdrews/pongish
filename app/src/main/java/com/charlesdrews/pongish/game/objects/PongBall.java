@@ -2,6 +2,7 @@ package com.charlesdrews.pongish.game.objects;
 
 import android.graphics.Color;
 import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Models a ball that moves in a straight line without gravity or friction (i.e. speed does and
@@ -115,14 +116,22 @@ public class PongBall implements GameObjects.Ball {
     // =========================== Parcelable methods & constant ==================================
 
     protected PongBall(Parcel in) {
-        //TODO
-
+        mDirection = in.readParcelable(GameObjects.Direction.class.getClassLoader());
+        mCenterX = in.readFloat();
+        mCenterY = in.readFloat();
+        mRadiusInPx = in.readFloat();
+        mSpeedInPxPerMs = in.readFloat();
+        mColor = in.readInt();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        //TODO
-
+        dest.writeParcelable(mDirection, flags);
+        dest.writeFloat(mCenterX);
+        dest.writeFloat(mCenterY);
+        dest.writeFloat(mRadiusInPx);
+        dest.writeFloat(mSpeedInPxPerMs);
+        dest.writeInt(mColor);
     }
 
     @Override
@@ -130,15 +139,15 @@ public class PongBall implements GameObjects.Ball {
         return 0;
     }
 
-    public static final Creator<PongBall> CREATOR = new Creator<PongBall>() {
+    public static final Creator<GameObjects.Ball> CREATOR = new Creator<GameObjects.Ball>() {
         @Override
-        public PongBall createFromParcel(Parcel in) {
+        public GameObjects.Ball createFromParcel(Parcel in) {
             return new PongBall(in);
         }
 
         @Override
-        public PongBall[] newArray(int size) {
-            return new PongBall[size];
+        public GameObjects.Ball[] newArray(int size) {
+            return new GameObjects.Ball[size];
         }
     };
 }

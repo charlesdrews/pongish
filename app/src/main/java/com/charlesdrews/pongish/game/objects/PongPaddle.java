@@ -2,6 +2,7 @@ package com.charlesdrews.pongish.game.objects;
 
 import android.graphics.Color;
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 /**
@@ -157,13 +158,22 @@ public class PongPaddle implements GameObjects.Paddle {
     // =========================== Parcelable methods & constant ==================================
 
     protected PongPaddle(Parcel in) {
-        //TODO
-
+        mPaddlePosition = in.readInt();
+        mColor = in.readInt();
+        mLeftX = in.readFloat();
+        mTopY = in.readFloat();
+        mRightX = in.readFloat();
+        mBottomY = in.readFloat();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        //TODO
+        dest.writeInt(mPaddlePosition);
+        dest.writeInt(mColor);
+        dest.writeFloat(mLeftX);
+        dest.writeFloat(mTopY);
+        dest.writeFloat(mRightX);
+        dest.writeFloat(mBottomY);
     }
 
     @Override

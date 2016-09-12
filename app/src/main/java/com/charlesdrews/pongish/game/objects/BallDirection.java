@@ -1,6 +1,7 @@
 package com.charlesdrews.pongish.game.objects;
 
 import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.Random;
 
@@ -70,13 +71,12 @@ public class BallDirection implements GameObjects.Direction {
     // =========================== Parcelable methods & constant ==================================
 
     protected BallDirection(Parcel in) {
-        //TODO
-
+        mDegrees = in.readDouble();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        //TODO
+        dest.writeDouble(mDegrees);
     }
 
     @Override

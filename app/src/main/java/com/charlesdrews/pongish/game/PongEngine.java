@@ -85,7 +85,10 @@ public class PongEngine implements GameEngine.Engine {
 
         if (mGameThread != null) {
             try {
-                // Wait for the game thread to complete.
+                // In case the game thread is sleeping (e.g. during a countdown), interrupt it.
+                mGameThread.interrupt();
+
+                // Then wait for the game thread to complete.
                 mGameThread.join();
             }
             catch (InterruptedException e) {
@@ -204,8 +207,8 @@ public class PongEngine implements GameEngine.Engine {
                 Thread.sleep(1_000L);
             }
             catch (InterruptedException e) {
-                Log.e(TAG, "Thread interrupted while sleeping during the countdown " +
-                        "after a point was scored.", e);
+                Log.v(TAG, "Thread interrupted while sleeping during the countdown " +
+                        "before game play.");
 
                 // Reset the interrupt flag that was cleared when InterruptedException
                 // was thrown, then end thread by returning.
