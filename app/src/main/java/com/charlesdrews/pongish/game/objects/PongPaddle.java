@@ -19,6 +19,8 @@ public class PongPaddle implements GameObjects.Paddle {
     private static final float MAXIMUM_HUMAN_PADDLE_SPEED_IN_PX_PER_MS = 1_000f;
     private static final float MAXIMUM_COMPUTER_PADDLE_SPEED_IN_PX_PER_MS = 0.75f;
 
+    private static final float COMPUTER_PADDLE_EXTRA_ABS_VALUE = 0.3f;
+
     private static Random sRandom = new Random();
 
 
@@ -146,7 +148,8 @@ public class PongPaddle implements GameObjects.Paddle {
             // ball struck bottom half.
 
             // Add a little extra so the computer isn't too perfect...
-            float extra = sRandom.nextFloat() - 0.05f;
+            float extra = sRandom.nextFloat() * COMPUTER_PADDLE_EXTRA_ABS_VALUE * 2 -
+                    COMPUTER_PADDLE_EXTRA_ABS_VALUE;
 
             return (-((ball.getCenterY() - paddleCenterY) / paddleHalfHeight)) + extra;
         }
