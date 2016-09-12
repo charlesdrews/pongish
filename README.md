@@ -7,6 +7,6 @@ Features include:
 - Single player vs. computer modes
 - Bonus balls added after enough volleys
 
-Here's what it looks like:
+Here's what it looks like (the gameplay is smoother when you're not recording video to Android Studio, I promise!):
 
 <img src="images/pongish.gif" width="600"/>
