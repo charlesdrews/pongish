@@ -1,4 +1,4 @@
-# It's Pong... ish
+# <img src="images/pongish.png" height="40"/> It's Pong... ish
 
 #### For fun, I created a simple game engine from scratch using Android SurfaceView and Canvas.
 
@@ -9,4 +9,4 @@ Features include:
 
 Here's what it looks like:
 
-![Pong... ish](images/pongish.gif)
+<img src="images/pongish.gif" width="600"/>
