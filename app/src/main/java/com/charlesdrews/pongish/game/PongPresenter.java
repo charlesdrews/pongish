@@ -29,11 +29,13 @@ public class PongPresenter implements GameContract.Presenter {
 
     private int mGameBoardWidth = 0;
     private int mGameBoardHeight = 0;
+    private int mComputerControlledPaddle;
 
     // ====================================== Constructor ========================================
 
-    public PongPresenter() {
+    public PongPresenter(int computerControlledPaddle) {
         mEngine = new PongEngine();
+        mComputerControlledPaddle = computerControlledPaddle;
     }
 
 
@@ -69,9 +71,13 @@ public class PongPresenter implements GameContract.Presenter {
 
     @Override
     public void saveGameStateToBundle(@NonNull Bundle gameStateBundle) {
+
+        // Save scene in bundle
         gameStateBundle.putParcelable(SCENE_PARCEL_KEY, mScene);
 
-        //TODO - anything else to save?
+        // Save which paddle (if any) is computer controlled
+        gameStateBundle.putInt(PongActivity.COMPUTER_CONTROLLED_PADDLE_KEY,
+                mComputerControlledPaddle);
     }
 
     @Override
@@ -90,7 +96,11 @@ public class PongPresenter implements GameContract.Presenter {
         // If game state was saved in a Bundle, restore it, pause game, & redraw last frame
         else if (savedGameStateBundle != null) {
             Log.d(TAG, "onGameViewReady: game saved in bundle");
+
             mScene = savedGameStateBundle.getParcelable(SCENE_PARCEL_KEY);
+            mComputerControlledPaddle = savedGameStateBundle
+                    .getInt(PongActivity.COMPUTER_CONTROLLED_PADDLE_KEY);
+
             if (mScene != null) {
                 Log.d(TAG, "onGameViewReady: scene successfully retrieved from bundle");
                 mEngine.setScene(mScene);
@@ -99,7 +109,7 @@ public class PongPresenter implements GameContract.Presenter {
         }
         // Otherwise, initiate a new game & start the game rendering loop
         else {
-            mScene = new PongScene(mGameBoardWidth, mGameBoardHeight);
+            mScene = new PongScene(mGameBoardWidth, mGameBoardHeight, mComputerControlledPaddle);
             mEngine.setScene(mScene);
             mEngine.startGameExecution();
             mViewActivity.showPauseIcon();
@@ -132,7 +142,7 @@ public class PongPresenter implements GameContract.Presenter {
         mViewActivity.clearSavedGameState();
 
         // Initialize and start a new game
-        mScene = new PongScene(mGameBoardWidth, mGameBoardHeight);
+        mScene = new PongScene(mGameBoardWidth, mGameBoardHeight, mComputerControlledPaddle);
         mEngine.setScene(mScene);
         mEngine.startGameExecution();
         mViewActivity.showPauseIcon();
@@ -140,13 +150,17 @@ public class PongPresenter implements GameContract.Presenter {
 
     @Override
     public void onLeftSidePointerMove(float deltaY) {
-        mScene.movePaddle(GameObjects.Scene.LEFT_PADDLE, deltaY,
-                mEngine.getLastFrameRenderTimeInMillis());
+        if (mComputerControlledPaddle != GameObjects.Scene.LEFT_PADDLE) {
+            mScene.movePaddle(GameObjects.Scene.LEFT_PADDLE, deltaY,
+                    mEngine.getLastFrameRenderTimeInMillis());
+        }
     }
 
     @Override
     public void onRightSidePointerMove(float deltaY) {
-        mScene.movePaddle(GameObjects.Scene.RIGHT_PADDLE, deltaY,
-                mEngine.getLastFrameRenderTimeInMillis());
+        if (mComputerControlledPaddle != GameObjects.Scene.RIGHT_PADDLE) {
+            mScene.movePaddle(GameObjects.Scene.RIGHT_PADDLE, deltaY,
+                    mEngine.getLastFrameRenderTimeInMillis());
+        }
     }
 }

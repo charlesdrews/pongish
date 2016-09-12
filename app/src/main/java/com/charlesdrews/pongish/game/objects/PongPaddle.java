@@ -14,13 +14,16 @@ public class PongPaddle implements GameObjects.Paddle {
     // ===================================== Constants ==========================================
 
     private static final float DEFAULT_OUTSIDE_MARGIN = 20f;
-    private static final float MAXIMUM_SPEED_IN_PX_PER_MS = 1_000f;
+    private static final float MAXIMUM_HUMAN_PADDLE_SPEED_IN_PX_PER_MS = 1_000f;
+    private static final float MAXIMUM_COMPUTER_PADDLE_SPEED_IN_PX_PER_MS = 0.75f;
 
 
     // ================================= Member variables =======================================
 
+    private boolean mComputerControlled;
     private int mPaddlePosition, mColor;
     private float mLeftX, mTopY, mRightX, mBottomY;
+    private float mMaxSpeedInPxPerMs;
 
 
     // =================================== Constructor ==========================================
@@ -37,7 +40,8 @@ public class PongPaddle implements GameObjects.Paddle {
      *                                  game board for the user's thumbs.
      * @param paddleColor is an int representation of the paddle's desired color.
      */
-    public PongPaddle(final int paddlePosition, final float paddleWidth, final float paddleHeight,
+    public PongPaddle(final boolean computerControlled, final int paddlePosition,
+                      final float paddleWidth, final float paddleHeight,
                       final int gameBoardWidth, final int gameBoardHeight,
                       final int gameBoardHorizontalMargin, final int paddleColor) {
 
@@ -61,17 +65,36 @@ public class PongPaddle implements GameObjects.Paddle {
         mBottomY = mTopY + paddleHeight;
 
         mColor = paddleColor;
+
+        // Set max speed
+        mComputerControlled = computerControlled;
+        if (mComputerControlled) {
+            mMaxSpeedInPxPerMs = MAXIMUM_COMPUTER_PADDLE_SPEED_IN_PX_PER_MS;
+        }
+        else {
+            mMaxSpeedInPxPerMs = MAXIMUM_HUMAN_PADDLE_SPEED_IN_PX_PER_MS;
+        }
     }
 
 
     // ============================ GameObjects.Paddle methods ===================================
 
     @Override
+    public boolean isComputerControlled() {
+        return mComputerControlled;
+    }
+
+    @Override
     public void move(float deltaY, final float gameBoardHeight,
                      final long millisecondsSinceLastUpdate) {
 
         // Reduce deltaY if moving that far would exceed maximum paddle speed
-        deltaY = Math.min(deltaY, millisecondsSinceLastUpdate * MAXIMUM_SPEED_IN_PX_PER_MS);
+        if (deltaY > 0) {
+            deltaY = Math.min(deltaY, mMaxSpeedInPxPerMs * millisecondsSinceLastUpdate);
+        }
+        else {
+            deltaY = Math.max(deltaY, (- mMaxSpeedInPxPerMs) * millisecondsSinceLastUpdate);
+        }
 
         // Update top and bottom coordinates
         mTopY += deltaY;
@@ -122,6 +145,11 @@ public class PongPaddle implements GameObjects.Paddle {
         else {
             return GameObjects.Scene.NO_PADDLE_HIT;
         }
+    }
+
+    @Override
+    public float getCenterY() {
+        return mTopY + ((mBottomY - mTopY) / 2f);
     }
 
 

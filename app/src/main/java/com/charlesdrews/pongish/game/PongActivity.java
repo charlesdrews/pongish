@@ -6,9 +6,13 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.charlesdrews.pongish.R;
+import com.charlesdrews.pongish.game.objects.GameObjects;
 
 public class PongActivity extends AppCompatActivity implements GameContract.ViewActivity,
         View.OnClickListener {
+
+    public static final String COMPUTER_CONTROLLED_PADDLE_KEY = "computer_controlled_paddle_key";
+
 
     // ==================================== Member variables =====================================
 
@@ -32,7 +36,8 @@ public class PongActivity extends AppCompatActivity implements GameContract.View
         mSavedGameState = savedInstanceState;
 
         // Instantiate the presenter and give it a reference to this ViewActivity.
-        mPresenter = new PongPresenter();
+        mPresenter = new PongPresenter(getIntent()
+                .getIntExtra(COMPUTER_CONTROLLED_PADDLE_KEY, GameObjects.Scene.NEITHER_PADDLE));
         mPresenter.bindViewActivity(this);
 
         // Give the presenter a reference to the game view, which is pulling double duty as

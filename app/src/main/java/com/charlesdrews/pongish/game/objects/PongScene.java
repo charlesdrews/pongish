@@ -2,6 +2,7 @@ package com.charlesdrews.pongish.game.objects;
 
 import android.graphics.Color;
 import android.os.Parcel;
+import android.util.Log;
 
 import com.charlesdrews.pongish.game.GameEngine;
 
@@ -57,6 +58,7 @@ public class PongScene implements GameObjects.Scene {
     // ================================= Member variables =======================================
 
     private int mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, mBackgroundColor;
+    private int mComputerControlledPaddle;
     private GameObjects.Score mLeftPlayerScore, mRightPlayerScore;
     private GameObjects.VerticalLine mLeftEndLine, mRightEndLine, mCenterLine;
     private GameObjects.Paddle mLeftPaddle, mRightPaddle;
@@ -75,8 +77,19 @@ public class PongScene implements GameObjects.Scene {
 
     // =================================== Constructor ==========================================
 
+    /**
+     * Instantiate a new Scene with the specified characteristics.
+     *
+     * @param availableWidth is the width in pixels available for the game board.
+     * @param availableHeight is the height in pixels available for the game board.
+     * @param computerControlledPaddle must be GameObjects.Scene.LEFT_PADDLE,
+     *                                 GameObjects.Scene.RIGHT_PADDLE, or
+     *                                 GameObjects.Scene.NEITHER_PADDLE.
+     * @param gameBoardColor is the int representation of the scene's background color.
+     */
     public PongScene(final int availableWidth, final int availableHeight,
-                     final int gameBoardColor) {
+                     final int computerControlledPaddle, final int gameBoardColor) {
+
         mGameBoardWidth = availableWidth - 2 * HORIZONTAL_THUMB_MARGIN_IN_PX;
         mGameBoardHeight = availableHeight;
         mGameBoardHorizontalMargin = HORIZONTAL_THUMB_MARGIN_IN_PX;
@@ -92,11 +105,22 @@ public class PongScene implements GameObjects.Scene {
                 gameBoardCenterX + SCORE_MARGIN_FROM_CENTER_IN_PX, SCORE_TOP_MARGIN_IN_PX,
                 SCORE_TEXT_SIZE, false);
 
+        mComputerControlledPaddle = computerControlledPaddle;
         initializeGameObjects();
     }
 
-    public PongScene(int availableWidth, int availableHeight) {
-        this(availableWidth, availableHeight, DEFAULT_BACKGROUND_COLOR);
+    /**
+     * Instantiate a new Scene with the specified characteristics.
+     *
+     * @param availableWidth is the width in pixels available for the game board.
+     * @param availableHeight is the height in pixels available for the game board.
+     * @param computerControlledPaddle must be GameObjects.Scene.LEFT_PADDLE,
+     *                                 GameObjects.Scene.RIGHT_PADDLE, or
+     *                                 GameObjects.Scene.NEITHER_PADDLE.
+     */
+    public PongScene(final int availableWidth, final int availableHeight,
+                     final int computerControlledPaddle) {
+        this(availableWidth, availableHeight, computerControlledPaddle, DEFAULT_BACKGROUND_COLOR);
     }
 
 
@@ -144,6 +168,38 @@ public class PongScene implements GameObjects.Scene {
             // If 2x the threshold is reached, release 2x the bonus balls, etc.
             for (int i = 0; i < mConsecutivePaddleHits / BONUS_BALLS_CONSECUTIVE_HITS_THRESHOLD; i++) {
                 addBonusBalls();
+            }
+        }
+
+        // Move computer controlled paddle
+        switch (mComputerControlledPaddle) {
+
+            case LEFT_PADDLE: {
+                float closestBallX = mNormalBall.getCenterX();
+                float closestBallY = mNormalBall.getCenterY();
+                for (GameObjects.Ball ball : mBonusBalls) {
+                    if (ball.getCenterX() < closestBallX) {
+                        closestBallX = ball.getCenterX();
+                        closestBallY = ball.getCenterY();
+                    }
+                }
+                mLeftPaddle.move(closestBallY - mLeftPaddle.getCenterY(), mGameBoardHeight,
+                        millisSinceLastUpdate);
+                break;
+            }
+
+            case RIGHT_PADDLE: {
+                float closestBallX = mNormalBall.getCenterX();
+                float closestBallY = mNormalBall.getCenterY();
+                for (GameObjects.Ball ball : mBonusBalls) {
+                    if (ball.getCenterX() > closestBallX) {
+                        closestBallX = ball.getCenterX();
+                        closestBallY = ball.getCenterY();
+                    }
+                }
+                mRightPaddle.move(closestBallY - mRightPaddle.getCenterY(), mGameBoardHeight,
+                        millisSinceLastUpdate);
+                break;
             }
         }
 
@@ -273,13 +329,26 @@ public class PongScene implements GameObjects.Scene {
                 mGameBoardHeight, CENTER_LINE_COLOR, true);
 
         // Add left & right paddles and the normal ball.
-        mLeftPaddle = new PongPaddle(LEFT_PADDLE, PADDLE_WIDTH_IN_PX,
-                mGameBoardHeight * PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
-                mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, PADDLE_COLOR);
+        switch (mComputerControlledPaddle) {
+            case LEFT_PADDLE:
+                mLeftPaddle = getNewPaddle(true, LEFT_PADDLE);
+                mRightPaddle = getNewPaddle(false, RIGHT_PADDLE);
+                break;
 
-        mRightPaddle = new PongPaddle(RIGHT_PADDLE, PADDLE_WIDTH_IN_PX,
-                mGameBoardHeight * PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
-                mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, PADDLE_COLOR);
+            case RIGHT_PADDLE:
+                mLeftPaddle = getNewPaddle(false, LEFT_PADDLE);
+                mRightPaddle = getNewPaddle(true, RIGHT_PADDLE);
+                break;
+
+            case NEITHER_PADDLE:
+                mLeftPaddle = getNewPaddle(false, LEFT_PADDLE);
+                mRightPaddle = getNewPaddle(false, RIGHT_PADDLE);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Computer controlled paddle must be either " +
+                        "GameObjects.Scene.LEFT_PADDLE, ...RIGHT_PADDLE, or ...NEITHER_PADDLE.");
+        }
 
         mNormalBall = new PongBall(mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin,
                 NORMAL_BALL_RADIUS_IN_PX, NORMAL_BALL_SPEED_IN_PX_PER_MS, NORMAL_BALL_COLOR);
@@ -311,6 +380,12 @@ public class PongScene implements GameObjects.Scene {
         mRectanglesToRender = new ArrayList<>(2);
         mRectanglesToRender.add(mLeftPaddle);
         mRectanglesToRender.add(mRightPaddle);
+    }
+
+    private GameObjects.Paddle getNewPaddle(boolean isComputerControlled, int paddlePosition) {
+        return new PongPaddle(isComputerControlled, paddlePosition, PADDLE_WIDTH_IN_PX,
+                mGameBoardHeight * PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
+                mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, PADDLE_COLOR);
     }
 
     /**

@@ -22,6 +22,7 @@ public interface GameObjects {
 
         int LEFT_PADDLE = 0;
         int RIGHT_PADDLE = 1;
+        int NEITHER_PADDLE = 2;
 
         float NO_PADDLE_HIT = -2f;
 
@@ -104,6 +105,13 @@ public interface GameObjects {
     interface Paddle extends GameEngine.RectangleToRender, Parcelable {
 
         /**
+         * Tell the caller whether this paddle is controlled by the computer.
+         *
+         * @return true if paddle is computer controlled, else false.
+         */
+        boolean isComputerControlled();
+
+        /**
          * Move up (negative deltaY) or down (positive deltaY) and ensure paddle stays on screen.
          * The Paddle's top y cannot be < 0 and the bottom y cannot be > gameBoardHeight. Also,
          * ensure the movement does not exceed the maximum speed of the paddle.
@@ -127,6 +135,12 @@ public interface GameObjects {
          * PongScene.NO_PADDLE_HIT (-2f).
          */
         float getRelativeCollisionLocation(@NonNull final Ball ball);
+
+        /**
+         * Retrieve the y coordinate of the center of the paddle.
+         * @return the center y coordinate.
+         */
+        float getCenterY();
     }
 
     /**

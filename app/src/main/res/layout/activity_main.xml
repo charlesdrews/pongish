@@ -10,10 +10,28 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.charlesdrews.pongish.MainActivity">
 
-    <Button
-        android:id="@+id/start_game_button"
-        android:text="@string/start_two_player_game_button"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_centerInParent="true"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/two_player_game_button"
+            android:text="@string/two_player_game_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/one_player_right_game"
+            android:text="@string/one_player_on_right_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/one_player_left_game"
+            android:text="@string/one_player_on_left_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
 </RelativeLayout>
