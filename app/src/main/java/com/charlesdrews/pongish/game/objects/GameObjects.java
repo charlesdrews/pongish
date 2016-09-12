@@ -43,7 +43,7 @@ public interface GameObjects {
          * @param millisSinceLastUpdate is the time delta for the movement.
          * @return true if a point was scored and the game loop needs to pause, else false.
          */
-        boolean updateGameObjectPositions(final long millisSinceLastUpdate);
+        boolean updateGameObjects(final long millisSinceLastUpdate);
 
         /**
          * Retrieve the background color to use for this Scene.
@@ -83,6 +83,14 @@ public interface GameObjects {
          * Start a new normal game ball after a point is scored.
          */
         void resetAfterPointScored();
+
+        /**
+         * Notify the Scene if the game engine has initiated a countdown before game play. Use
+         * this value to determine whether or not to allow paddle movements.
+         *
+         * @param countdownInProgress indicates whether a countdown is currently in progress.
+         */
+        void setCountdownInProgress(boolean countdownInProgress);
     }
 
     interface Score extends GameEngine.ScoreToRender, Parcelable {

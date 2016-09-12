@@ -1,7 +1,6 @@
 package com.charlesdrews.pongish.game.objects;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 
 /**
  * Model a player's score, including the position on the game board where it will be drawn.

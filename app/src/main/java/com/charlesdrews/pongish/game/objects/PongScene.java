@@ -35,12 +35,19 @@ public class PongScene implements GameObjects.Scene {
 
     private static final int NORMAL_BALL_COLOR = Color.WHITE;
     private static final float NORMAL_BALL_RADIUS_IN_PX = 30f;
-    private static final float NORMAL_BALL_SPEED_IN_PX_PER_MS = 0.70f;
+    private static final float NORMAL_BALL_SPEED_IN_PX_PER_MS = 0.7f;
+
+    private static final int[] BONUS_BALL_COLORS = { Color.YELLOW, Color.CYAN, Color.MAGENTA };
+    private static final float BONUS_BALL_RADIUS_IN_PX = 20f;
+    private static final float BONUS_BALL_SPEED_IN_PX_PER_MS = 0.6f;
+
+    private static final int BONUS_BALLS_CONSECUTIVE_HITS_THRESHOLD = 10;
 
     private static final float BALL_SPEED_INCREASE_ON_PADDLE_HIT = 0.03f;
 
     private static final int BALL_COLOR_ON_POINT_SCORED = Color.RED;
     private static final int END_LINE_COLOR_ON_POINT_SCORED = Color.RED;
+    private static final long MS_BEFORE_LINE_COLOR_REVERTS_AFTER_SCORE = 1_000L;
 
     private static final double MIN_ABS_VAL_DEG_AFTER_PADDLE_COLLISION = 10d;
     private static final double HALF_ABS_VAL_RANGE_AFTER_PADDLE_COLLISION =
@@ -56,6 +63,9 @@ public class PongScene implements GameObjects.Scene {
     private GameObjects.Ball mNormalBall;
     private List<GameObjects.Ball> mBonusBalls;
     private int mConsecutivePaddleHits = 0;
+    private boolean mNeedToAddBonusBalls = false;
+    private boolean mCountDownInProgress = false;
+    private long mTimeLeftEndLineTurnedRed = 0, mTimeRightEndLineTurnedRed = 0;
 
     private List<GameEngine.ScoreToRender> mScoresToRender;
     private List<GameEngine.VerticalLineToRender> mVerticalLinesToRender;
@@ -94,28 +104,50 @@ public class PongScene implements GameObjects.Scene {
 
     @Override
     public void movePaddle(final int paddle, final float deltaY, final long millisSinceLastUpdate) {
-        if (paddle == LEFT_PADDLE) {
-            mLeftPaddle.move(deltaY, mGameBoardHeight, millisSinceLastUpdate);
-        }
-        else if (paddle == RIGHT_PADDLE) {
-            mRightPaddle.move(deltaY, mGameBoardHeight, millisSinceLastUpdate);
+        if (!mCountDownInProgress) {
+            if (paddle == LEFT_PADDLE) {
+                mLeftPaddle.move(deltaY, mGameBoardHeight, millisSinceLastUpdate);
+            } else if (paddle == RIGHT_PADDLE) {
+                mRightPaddle.move(deltaY, mGameBoardHeight, millisSinceLastUpdate);
+            }
         }
     }
 
     @Override
-    public boolean updateGameObjectPositions(final long millisSinceLastUpdate) {
+    public boolean updateGameObjects(final long millisSinceLastUpdate) {
+
+        // If enough time has elapsed, reset colors for end lines
+        if (mLeftEndLine.getColor() != END_LINE_COLOR &&
+                System.currentTimeMillis() - mTimeLeftEndLineTurnedRed >
+                        MS_BEFORE_LINE_COLOR_REVERTS_AFTER_SCORE) {
+            mLeftEndLine.setColor(END_LINE_COLOR);
+        }
+
+        if (mRightEndLine.getColor() != END_LINE_COLOR &&
+                System.currentTimeMillis() - mTimeRightEndLineTurnedRed >
+                        MS_BEFORE_LINE_COLOR_REVERTS_AFTER_SCORE) {
+            mRightEndLine.setColor(END_LINE_COLOR);
+        }
 
         // Move normal ball (update direction if paddle hit, otherwise check if side wall hit)
-        boolean sideWallHit = moveBallAndCheckResult(mNormalBall, millisSinceLastUpdate);
+        boolean pointScored = moveBallAndCheckResult(mNormalBall, millisSinceLastUpdate, true);
 
         // Do the same for each bonus ball
         for (GameObjects.Ball ball : mBonusBalls) {
-            sideWallHit = sideWallHit || moveBallAndCheckResult(ball, millisSinceLastUpdate);
+            pointScored = pointScored || moveBallAndCheckResult(ball, millisSinceLastUpdate, false);
         }
 
-        //TODO - if mConsecutivePaddleHits exceeds a threshold, add bonus balls?
+        // If a point was not yet scored, bonus balls were not yet added, and the # of consecutive
+        // hits exceeds threshold, then add bonus balls!
+        if (!pointScored && mNeedToAddBonusBalls) {
 
-        return sideWallHit;
+            // If 2x the threshold is reached, release 2x the bonus balls, etc.
+            for (int i = 0; i < mConsecutivePaddleHits / BONUS_BALLS_CONSECUTIVE_HITS_THRESHOLD; i++) {
+                addBonusBalls();
+            }
+        }
+
+        return pointScored;
     }
 
     @Override
@@ -156,6 +188,11 @@ public class PongScene implements GameObjects.Scene {
     @Override
     public void resetAfterPointScored() {
         initializeGameObjects();
+    }
+
+    @Override
+    public void setCountdownInProgress(boolean countdownInProgress) {
+        mCountDownInProgress = countdownInProgress;
     }
 
 
@@ -254,6 +291,7 @@ public class PongScene implements GameObjects.Scene {
         else {
             mBonusBalls.clear();
         }
+        mNeedToAddBonusBalls = false;
 
         // Instantiate and initialize a list of scores to return to the renderer.
         mScoresToRender = new ArrayList<>(2);
@@ -309,27 +347,45 @@ public class PongScene implements GameObjects.Scene {
      * @param ball whose position will be checked against the paddle positions.
      * @return true if ball hit a paddle, else false.
      */
-    private boolean checkForPaddleCollisionsAndUpdateBall(GameObjects.Ball ball) {
+    private boolean checkForPaddleCollisionsAndUpdateBall(GameObjects.Ball ball,
+                                                          boolean isNormalBall) {
 
         // Check for collision with left paddle
-        float collision = mLeftPaddle.getRelativeCollisionLocation(ball);
-        if (collision != NO_PADDLE_HIT) {
-            mConsecutivePaddleHits += 1;
-            ball.setDirection(getDirectionAfterPaddleCollision(LEFT_PADDLE, collision));
+        float collisionLocation = mLeftPaddle.getRelativeCollisionLocation(ball);
+
+        if (collisionLocation != NO_PADDLE_HIT) {
+
+            if (isNormalBall) {
+                incrementConsecutiveHitsCounter();
+            }
+
+            ball.setDirection(getDirectionAfterPaddleCollision(LEFT_PADDLE, collisionLocation));
             ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT);
             return true;
         }
         else {
             // If no collision with left paddle, check right paddle
-            collision = mRightPaddle.getRelativeCollisionLocation(ball);
-            if (collision != NO_PADDLE_HIT) {
-                mConsecutivePaddleHits += 1;
-                ball.setDirection(getDirectionAfterPaddleCollision(RIGHT_PADDLE, collision));
+            collisionLocation = mRightPaddle.getRelativeCollisionLocation(ball);
+            if (collisionLocation != NO_PADDLE_HIT) {
+
+                if (isNormalBall) {
+                    incrementConsecutiveHitsCounter();
+                }
+
+                ball.setDirection(getDirectionAfterPaddleCollision(RIGHT_PADDLE, collisionLocation));
                 ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT);
                 return true;
             }
         }
         return false;
+    }
+
+    private void incrementConsecutiveHitsCounter() {
+        mConsecutivePaddleHits += 1;
+        if (mConsecutivePaddleHits > 0
+                && mConsecutivePaddleHits % BONUS_BALLS_CONSECUTIVE_HITS_THRESHOLD == 0) {
+            mNeedToAddBonusBalls = true;
+        }
     }
 
     /**
@@ -341,33 +397,54 @@ public class PongScene implements GameObjects.Scene {
      * @param millisSinceLastUpdate is the time in milliseconds since the ball was last moved.
      * @return true if a point was scored, else false.
      */
-    private boolean moveBallAndCheckResult(GameObjects.Ball ball, long millisSinceLastUpdate) {
+    private boolean moveBallAndCheckResult(GameObjects.Ball ball, long millisSinceLastUpdate,
+                                           boolean isNormalBall) {
 
         // Start by updating the ball's position
         ball.move(millisSinceLastUpdate, mGameBoardHeight);
 
         // Then check if it hit a paddle, and update its direction if yes
-        if (!checkForPaddleCollisionsAndUpdateBall(mNormalBall)) {
+        if (!checkForPaddleCollisionsAndUpdateBall(ball, isNormalBall)) {
 
             // If the ball hasn't hit either paddle, check if it hit the left or right wall
-            int hit = mNormalBall.checkIfPointScored(mGameBoardWidth, mGameBoardHorizontalMargin);
+            int hit = ball.checkIfPointScored(mGameBoardWidth, mGameBoardHorizontalMargin);
 
             // If a side wall was hit, return true so the game engine knows to pause the loop
             switch (hit) {
                 case GameObjects.Scene.LEFT_WALL_HIT: {
                     ball.setColor(BALL_COLOR_ON_POINT_SCORED);
+
                     mLeftEndLine.setColor(END_LINE_COLOR_ON_POINT_SCORED);
+                    mTimeLeftEndLineTurnedRed = System.currentTimeMillis();
+
                     mRightPlayerScore.incrementScoreByOne();
-                    mConsecutivePaddleHits = 0;
-                    return true;
+
+                    if (isNormalBall) {
+                        mConsecutivePaddleHits = 0;
+                    }
+                    else {
+                        mBonusBalls.remove(ball);
+                    }
+
+                    return isNormalBall;
                 }
 
                 case GameObjects.Scene.RIGHT_WALL_HIT: {
                     ball.setColor(BALL_COLOR_ON_POINT_SCORED);
+
                     mRightEndLine.setColor(END_LINE_COLOR_ON_POINT_SCORED);
+                    mTimeRightEndLineTurnedRed = System.currentTimeMillis();
+
                     mLeftPlayerScore.incrementScoreByOne();
-                    mConsecutivePaddleHits = 0;
-                    return true;
+
+                    if (isNormalBall) {
+                        mConsecutivePaddleHits = 0;
+                    }
+                    else {
+                        mBonusBalls.remove(ball);
+                    }
+
+                    return isNormalBall;
                 }
 
                 default:
@@ -377,5 +454,14 @@ public class PongScene implements GameObjects.Scene {
         else {
             return false;
         }
+    }
+
+    private void addBonusBalls() {
+        for (int color : BONUS_BALL_COLORS) {
+            mBonusBalls.add(new PongBall(mGameBoardWidth, mGameBoardHeight,
+                    mGameBoardHorizontalMargin,
+                    BONUS_BALL_RADIUS_IN_PX, BONUS_BALL_SPEED_IN_PX_PER_MS, color));
+        }
+        mNeedToAddBonusBalls = false;
     }
 }

@@ -131,7 +131,7 @@ public class PongEngine implements GameEngine.Engine {
 
             // Update item positions. Use the last frame's rendering time as an estimate for how
             // long it will take to render this frame.
-            boolean pointScored = mScene.updateGameObjectPositions(mLastFrameRenderTimeInMillis);
+            boolean pointScored = mScene.updateGameObjects(mLastFrameRenderTimeInMillis);
 
             // Draw the frame.
             drawFrame();
@@ -191,6 +191,8 @@ public class PongEngine implements GameEngine.Engine {
 
     private void drawCountDown() {
 
+        mScene.setCountdownInProgress(true);
+
         for (int i = COUNTDOWN_NUMBER_OF_SECONDS; i > 0; i--){
 
             // Lock the canvas. If not successful, do not proceed.
@@ -221,5 +223,7 @@ public class PongEngine implements GameEngine.Engine {
                 return;
             }
         }
+
+        mScene.setCountdownInProgress(false);
     }
 }
