@@ -88,19 +88,29 @@ public interface GameEngine {
          *
          * @param color of the background as an int
          */
-        void drawBackground(final int color);
+        void drawBackground(int color);
+
+        /**
+         * Draw a vertical line in the game area.
+         *
+         * @param x is the x coordinate of the vertical line.
+         * @param topY is the y coordinate of the top of the line.
+         * @param bottomY is the y coordinate of the bottom of the line.
+         * @param color is the color of the line as an int.
+         * @param dashed indicates whether line should be solid (false) or dashed (true).
+         */
+        void drawVerticalLine(float x, float topY, float bottomY, int color, boolean dashed);
 
         /**
          * Draw a circle in the game area.
          * beginDrawing MUST be called prior, and commitDrawing() MUST be called after.
          *
-         * @param x coordinate of the circle's center
-         * @param y coordinate of the circle's center
+         * @param centerX is the x coordinate of the circle's center.
+         * @param centerY is the y coordinate of the circle's center.
          * @param radius of the circle in pixels
          * @param color of the circle as an int
          */
-        void drawCircle(final float centerX, final float centerY, final float radius,
-                        final int color);
+        void drawCircle(float centerX, float centerY, float radius, int color);
 
         /**
          * Draw a rectangle in the game area.
@@ -112,20 +122,18 @@ public interface GameEngine {
          * @param bottomY is the y coordinate of the rectangle's bottom edge.
          * @param color of the rectangle as an int.
          */
-        void drawRect(final float leftX, final float topY, final float rightX, final float bottomY,
-                      final int color);
+        void drawRect(float leftX, float topY, float rightX, float bottomY, int color);
 
         /**
-         * Draw a vertical line in the game area.
+         * Draw a countdown number in the center of the screen.
          *
-         * @param x is the x coordinate of the vertical line.
-         * @param topY is the y coordinate of the top of the line.
-         * @param bottomY is the y coordinate of the bottom of the line.
-         * @param color is the color of the line as an int.
-         * @param dashed indicates whether line should be solid (false) or dashed (true).
+         * @param countDownText is the text to display.
+         * @param textSize is the desired text size.
+         * @param textColor is the textColor of the text as an int.
+         * @param backgroundColor is the color, as an int, to show behind the text.
          */
-        void drawVerticalLine(final float x, final float topY, final float bottomY,
-                              final int color, final boolean dashed);
+        void drawCountDown(@NonNull String countDownText, float textSize, int textColor,
+                           int backgroundColor);
 
         /**
          * Draw the frames per second rate as text in the game area.
@@ -137,7 +145,8 @@ public interface GameEngine {
          * @param textSize in pixels
          * @param color of the text as an int
          */
-        void drawFramesPerSecond(@NonNull String fpsText, float x, float y, float textSize, int color);
+        void drawFramesPerSecond(@NonNull String fpsText, float x, float y, float textSize,
+                                 int color);
     }
 
     /**

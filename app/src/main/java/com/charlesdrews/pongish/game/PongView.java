@@ -2,9 +2,9 @@ package com.charlesdrews.pongish.game;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
@@ -203,18 +203,6 @@ public class PongView extends SurfaceView implements SurfaceHolder.Callback, Gam
     }
 
     @Override
-    public void drawCircle(float centerX, float centerY, float radius, int color) {
-        mPaint.setColor(color);
-        mCanvas.drawCircle(centerX, centerY, radius, mPaint);
-    }
-
-    @Override
-    public void drawRect(float leftX, float topY, float rightX, float bottomY, int color) {
-        mPaint.setColor(color);
-        mCanvas.drawRect(leftX, topY, rightX, bottomY, mPaint);
-    }
-
-    @Override
     public void drawVerticalLine(float x, float topY, float bottomY, int color, boolean dashed) {
         mPaint.setColor(color);
         if (dashed) {
@@ -227,9 +215,48 @@ public class PongView extends SurfaceView implements SurfaceHolder.Callback, Gam
     }
 
     @Override
-    public void drawFramesPerSecond(@NonNull String fpsText, float x, float y, float textSize, int color) {
+    public void drawCircle(float centerX, float centerY, float radius, int color) {
+        mPaint.setColor(color);
+        mCanvas.drawCircle(centerX, centerY, radius, mPaint);
+    }
+
+    @Override
+    public void drawRect(float leftX, float topY, float rightX, float bottomY, int color) {
+        mPaint.setColor(color);
+        mCanvas.drawRect(leftX, topY, rightX, bottomY, mPaint);
+    }
+
+    @Override
+    public void drawCountDown(@NonNull String countDownText, float textSize, int textColor,
+                              int backgroundColor) {
+
+        // Update the Paint with the necessary text style.
+        mPaint.setTextSize(textSize);
+        mPaint.setTextAlign(Paint.Align.CENTER);
+
+        // Calculate dimensions and location of the text.
+        float width = mPaint.measureText(countDownText);
+        float height = mPaint.descent() + mPaint.ascent();
+        float x = mCanvas.getWidth() / 2f;
+        float y = (mCanvas.getHeight() / 2f) - (height / 2f);
+        float extraMargin = 15f;
+
+        // Draw a box behind the text so it doesn't overlap with other game objects.
+        mPaint.setColor(backgroundColor);
+        mCanvas.drawRect(x - width / 2f - extraMargin, y + height - extraMargin,
+                x + width / 2f + extraMargin, y + extraMargin, mPaint);
+
+        // Draw the countdown text.
+        mPaint.setColor(textColor);
+        mCanvas.drawText(countDownText, x, y, mPaint);
+    }
+
+    @Override
+    public void drawFramesPerSecond(@NonNull String fpsText, float x, float y, float textSize,
+                                    int color) {
         mPaint.setColor(color);
         mPaint.setTextSize(textSize);
+        mPaint.setTextAlign(Paint.Align.LEFT);
         mCanvas.drawText(fpsText, x, y, mPaint);
     }
 }

@@ -18,7 +18,9 @@ public class PongEngine implements GameEngine.Engine {
     // ==================================== Constants ============================================
     private static final String TAG = "PongEngine";
 
-    private static final long PAUSE_AFTER_SCORE_IN_MS = 2_500L;
+    private static final int COUNTDOWN_NUMBER_OF_SECONDS = 3;
+    private static final int COUNTDOWN_TEXT_COLOR = Color.WHITE;
+    private static final float COUNTDOWN_TEXT_SIZE = 150f;
 
     private static final String FPS_TEMPLATE = "FPS: %d";
     private static final int FPS_TEXT_COLOR = Color.WHITE;
@@ -100,38 +102,12 @@ public class PongEngine implements GameEngine.Engine {
 
         // Lock the canvas. If not successful, do not proceed.
         if (!mRenderer.beginDrawing()) {
-            Log.d(TAG, "drawFrame: unable to lock canvas!");
+            Log.w(TAG, "drawFrame: unable to lock canvas!");
             return;
         }
 
-        // Wipe everything by re-drawing the background color.
-        mRenderer.drawBackground(mScene.getBackgroundColor());
-
-        // Draw each game item.
-        for (GameEngine.CircleToRender circle : mScene.getCirclesToRender()) {
-            mRenderer.drawCircle(circle.getCenterX(), circle.getCenterY(), circle.getRadius(),
-                    circle.getColor());
-        }
-
-        for (GameEngine.RectangleToRender rect : mScene.getRectanglesToRender()) {
-            mRenderer.drawRect(rect.getLeftX(), rect.getTopY(), rect.getRightX(), rect.getBottomY(),
-                    rect.getColor());
-        }
-
-        for (GameEngine.VerticalLineToRender line : mScene.getVerticalLinesToRender()) {
-            mRenderer.drawVerticalLine(line.getX(), line.getTopY(), line.getBottomY(),
-                    line.getColor(), line.isDashed());
-        }
-
-        // Draw the frames per second as text.
-        long framesPerSecond = 0L;
-        if (mLastFrameRenderTimeInMillis > 0L) {
-            framesPerSecond = 1_000L / mLastFrameRenderTimeInMillis;
-        }
-
-        mRenderer.drawFramesPerSecond(
-                String.format(Locale.getDefault(), FPS_TEMPLATE, framesPerSecond),
-                FPS_X_COORDINATE, FPS_Y_COORDINATE, FPS_TEXT_SIZE, FPS_TEXT_COLOR);
+        // Once canvas is locked, call the renderer's specific draw methods.
+        callRendererDrawMethodsAfterCanvasIsLocked();
 
         // Unlock the canvas and post the drawings.
         mRenderer.commitDrawing();
@@ -139,6 +115,12 @@ public class PongEngine implements GameEngine.Engine {
 
     @Override
     public void run() {
+
+        // Show a countdown before starting the game loop. Draw the first frame first, so the
+        // screen is not blank behind the countdown.
+        drawFrame();
+        drawCountDown();
+
         while (mExecuteGameLoop) {
 
             // Save frame render start time.
@@ -154,21 +136,81 @@ public class PongEngine implements GameEngine.Engine {
             // Track frame rendering time.
             mLastFrameRenderTimeInMillis = System.currentTimeMillis() - renderStartTimeInMillis;
 
-            // If a point was scored, pause the game temporarily.
             if (pointScored) {
+                // Show countdown with ball frozen at moment point was scored (i.e. on end line).
+                drawCountDown();
+
+                // Reset scene AFTER countdown.
                 mScene.resetAfterPointScored();
+            }
+        }
+    }
 
-                // TODO - replace this with a countdown to the new ball
-                try {
-                    Thread.sleep(PAUSE_AFTER_SCORE_IN_MS);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "Game thread interrupted while sleeping after point scored", e);
 
-                    // Reset the interrupt flag that was cleared when InterruptedException
-                    // was thrown, then end thread by returning.
-                    Thread.currentThread().interrupt();
-                    return;
-                }
+    // ==================================== Helper methods =======================================
+
+    private void callRendererDrawMethodsAfterCanvasIsLocked() {
+
+        // Wipe everything by re-drawing the background color.
+        mRenderer.drawBackground(mScene.getBackgroundColor());
+
+        // Draw each game item.
+        for (GameEngine.VerticalLineToRender line : mScene.getVerticalLinesToRender()) {
+            mRenderer.drawVerticalLine(line.getX(), line.getTopY(), line.getBottomY(),
+                    line.getColor(), line.isDashed());
+        }
+
+        for (GameEngine.CircleToRender circle : mScene.getCirclesToRender()) {
+            mRenderer.drawCircle(circle.getCenterX(), circle.getCenterY(), circle.getRadius(),
+                    circle.getColor());
+        }
+
+        for (GameEngine.RectangleToRender rect : mScene.getRectanglesToRender()) {
+            mRenderer.drawRect(rect.getLeftX(), rect.getTopY(), rect.getRightX(), rect.getBottomY(),
+                    rect.getColor());
+        }
+
+        // Draw the frames per second as text.
+        long framesPerSecond = 0L;
+        if (mLastFrameRenderTimeInMillis > 0L) {
+            framesPerSecond = 1_000L / mLastFrameRenderTimeInMillis;
+        }
+
+        mRenderer.drawFramesPerSecond(
+                String.format(Locale.getDefault(), FPS_TEMPLATE, framesPerSecond),
+                FPS_X_COORDINATE, FPS_Y_COORDINATE, FPS_TEXT_SIZE, FPS_TEXT_COLOR);
+    }
+
+    private void drawCountDown() {
+
+        for (int i = COUNTDOWN_NUMBER_OF_SECONDS; i > 0; i--){
+
+            // Lock the canvas. If not successful, do not proceed.
+            if (!mRenderer.beginDrawing()) {
+                Log.w(TAG, "drawFrame: unable to lock canvas!");
+                return;
+            }
+
+            // Draw countdown text. Re-draw frame each time so screen is not blank.
+            callRendererDrawMethodsAfterCanvasIsLocked();
+            mRenderer.drawCountDown("" + i, COUNTDOWN_TEXT_SIZE, COUNTDOWN_TEXT_COLOR,
+                    mScene.getBackgroundColor());
+
+            // Unlock the canvas and post the drawings.
+            mRenderer.commitDrawing();
+
+            // Wait one second
+            try {
+                Thread.sleep(1_000L);
+            }
+            catch (InterruptedException e) {
+                Log.e(TAG, "Thread interrupted while sleeping during the countdown " +
+                        "after a point was scored.", e);
+
+                // Reset the interrupt flag that was cleared when InterruptedException
+                // was thrown, then end thread by returning.
+                Thread.currentThread().interrupt();
+                return;
             }
         }
     }

@@ -30,9 +30,9 @@ public class PongScene implements GameObjects.Scene {
 
     private static final int NORMAL_BALL_COLOR = Color.WHITE;
     private static final float NORMAL_BALL_RADIUS_IN_PX = 30f;
-    private static final float NORMAL_BALL_SPEED_IN_PX_PER_MS = 0.8f;
+    private static final float NORMAL_BALL_SPEED_IN_PX_PER_MS = 0.75f;
 
-    private static final float BALL_SPEED_INCREASE_ON_PADDLE_HIT = 0.02f;
+    private static final float BALL_SPEED_INCREASE_ON_PADDLE_HIT = 0.05f;
 
     private static final int BALL_COLOR_ON_POINT_SCORED = Color.RED;
     private static final int END_LINE_COLOR_ON_POINT_SCORED = Color.RED;
