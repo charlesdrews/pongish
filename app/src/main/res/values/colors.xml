@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#00796B</color>
-    <color name="colorPrimaryDark">#004D40</color>
-    <color name="colorAccent">#D500F9</color>
+    <color name="colorPrimary">#ff616161</color>
+    <color name="colorPrimaryDark">#ff212121</color>
+    <color name="colorAccent">#ff00ff00</color>
 
-    <color name="playPauseRestartIcons">#FFFFFF</color>
-    <color name="centerLine">#FFFFFF</color>
+    <color name="playPauseRestartIcons">@color/colorAccent</color>
 </resources>

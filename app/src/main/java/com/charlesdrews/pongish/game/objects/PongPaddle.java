@@ -1,8 +1,6 @@
 package com.charlesdrews.pongish.game.objects;
 
-import android.graphics.Color;
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 /**

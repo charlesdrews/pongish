@@ -102,6 +102,19 @@ public interface GameEngine {
         void drawVerticalLine(float x, float topY, float bottomY, int color, boolean dashed);
 
         /**
+         * Draw a player's score on the game board.
+         * @param scoreText is the score to be displayed.
+         * @param x is the left x coordinate of the text if rightAlign is false, else the right x
+         *          coordinate of the text.
+         * @param topY is the y coordinate for the TOP of the text.
+         * @param textSize is the height of the text.
+         * @param color is the color of the text as an int.
+         * @param rightAlign indicates whether the text should be right or left aligned.
+         */
+        void drawScore(@NonNull String scoreText, float x, float topY, float textSize, int color,
+                       boolean rightAlign);
+
+        /**
          * Draw a circle in the game area.
          * beginDrawing MUST be called prior, and commitDrawing() MUST be called after.
          *
@@ -179,5 +192,14 @@ public interface GameEngine {
         float getBottomY();
         int getColor();
         boolean isDashed();
+    }
+
+    interface ScoreToRender {
+        String getScoreText();
+        float getX();
+        float getTopY();
+        float getTextSize();
+        int getColor();
+        boolean isRightAligned();
     }
 }

@@ -158,6 +158,11 @@ public class PongEngine implements GameEngine.Engine {
         mRenderer.drawBackground(mScene.getBackgroundColor());
 
         // Draw each game item.
+        for (GameEngine.ScoreToRender score : mScene.getScoresToRender()) {
+            mRenderer.drawScore(score.getScoreText(), score.getX(), score.getTopY(),
+                    score.getTextSize(), score.getColor(), score.isRightAligned());
+        }
+
         for (GameEngine.VerticalLineToRender line : mScene.getVerticalLinesToRender()) {
             mRenderer.drawVerticalLine(line.getX(), line.getTopY(), line.getBottomY(),
                     line.getColor(), line.isDashed());

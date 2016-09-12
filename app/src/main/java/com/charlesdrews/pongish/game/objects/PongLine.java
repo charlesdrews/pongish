@@ -1,7 +1,6 @@
 package com.charlesdrews.pongish.game.objects;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 
 import com.charlesdrews.pongish.game.GameEngine;
 

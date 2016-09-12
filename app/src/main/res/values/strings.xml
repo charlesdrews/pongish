@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">Pongish</string>
+    <string name="app_name">Pong... ish</string>
+
+    <string name="start_two_player_game_button">START 2 PLAYER GAME</string>
 
     <string name="play_pause_icon_description">Play and pause game icon</string>
     <string name="restart_icon_description">Restart game icon</string>

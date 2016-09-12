@@ -52,23 +52,30 @@ public interface GameObjects {
         int getBackgroundColor();
 
         /**
+         * Retrieve a List of scores for the Renderer to draw as text.
+         *
+         * @return the scores included in the Scene.
+         */
+        List<GameEngine.ScoreToRender> getScoresToRender();
+
+        /**
          * Retrieve a List of circles for the Renderer to draw.
          *
-         * @return the circles included in the PongScene.
+         * @return the circles included in the Scene.
          */
         List<GameEngine.CircleToRender> getCirclesToRender();
 
         /**
          * Retrieve a list of rectangles for the Renderer to draw.
          *
-         * @return the rectangles included in the PongScene.
+         * @return the rectangles included in the Scene.
          */
         List<GameEngine.RectangleToRender> getRectanglesToRender();
 
         /**
          * Retrieve a list of vertical lines for the Renderer to draw.
          *
-         * @return the vertical lines includes in the pong scene.
+         * @return the vertical lines includes in the Scene.
          */
         List<GameEngine.VerticalLineToRender> getVerticalLinesToRender();
 
@@ -76,6 +83,11 @@ public interface GameObjects {
          * Start a new normal game ball after a point is scored.
          */
         void resetAfterPointScored();
+    }
+
+    interface Score extends GameEngine.ScoreToRender, Parcelable {
+        void incrementScoreByOne();
+        void setScore(int score);
     }
 
     /**

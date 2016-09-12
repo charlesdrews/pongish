@@ -2,7 +2,6 @@ package com.charlesdrews.pongish.game.objects;
 
 import android.graphics.Color;
 import android.os.Parcel;
-import android.os.Parcelable;
 
 import com.charlesdrews.pongish.game.GameEngine;
 
@@ -22,6 +21,11 @@ public class PongScene implements GameObjects.Scene {
     private static final int DEFAULT_BACKGROUND_COLOR = Color.BLACK;
     private static final int HORIZONTAL_THUMB_MARGIN_IN_PX = 200;
 
+    private static final int SCORE_COLOR = Color.GREEN;
+    private static final float SCORE_TOP_MARGIN_IN_PX = 20f;
+    private static final float SCORE_MARGIN_FROM_CENTER_IN_PX = 40f;
+    private static final float SCORE_TEXT_SIZE = 100f;
+
     private static final int CENTER_LINE_COLOR = Color.WHITE;
     private static final int END_LINE_COLOR = Color.WHITE;
 
@@ -31,9 +35,9 @@ public class PongScene implements GameObjects.Scene {
 
     private static final int NORMAL_BALL_COLOR = Color.WHITE;
     private static final float NORMAL_BALL_RADIUS_IN_PX = 30f;
-    private static final float NORMAL_BALL_SPEED_IN_PX_PER_MS = 0.75f;
+    private static final float NORMAL_BALL_SPEED_IN_PX_PER_MS = 0.70f;
 
-    private static final float BALL_SPEED_INCREASE_ON_PADDLE_HIT = 0.05f;
+    private static final float BALL_SPEED_INCREASE_ON_PADDLE_HIT = 0.03f;
 
     private static final int BALL_COLOR_ON_POINT_SCORED = Color.RED;
     private static final int END_LINE_COLOR_ON_POINT_SCORED = Color.RED;
@@ -46,12 +50,14 @@ public class PongScene implements GameObjects.Scene {
     // ================================= Member variables =======================================
 
     private int mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, mBackgroundColor;
+    private GameObjects.Score mLeftPlayerScore, mRightPlayerScore;
     private GameObjects.VerticalLine mLeftEndLine, mRightEndLine, mCenterLine;
     private GameObjects.Paddle mLeftPaddle, mRightPaddle;
     private GameObjects.Ball mNormalBall;
     private List<GameObjects.Ball> mBonusBalls;
-    private int consecutivePaddleHits = 0;
+    private int mConsecutivePaddleHits = 0;
 
+    private List<GameEngine.ScoreToRender> mScoresToRender;
     private List<GameEngine.VerticalLineToRender> mVerticalLinesToRender;
     private List<GameEngine.CircleToRender> mCirclesToRender;
     private List<GameEngine.RectangleToRender> mRectanglesToRender;
@@ -59,18 +65,28 @@ public class PongScene implements GameObjects.Scene {
 
     // =================================== Constructor ==========================================
 
-    public PongScene(final int gameBoardWidth, final int gameBoardHeight,
+    public PongScene(final int availableWidth, final int availableHeight,
                      final int gameBoardColor) {
-        mGameBoardWidth = gameBoardWidth - 2 * HORIZONTAL_THUMB_MARGIN_IN_PX;
-        mGameBoardHeight = gameBoardHeight;
+        mGameBoardWidth = availableWidth - 2 * HORIZONTAL_THUMB_MARGIN_IN_PX;
+        mGameBoardHeight = availableHeight;
         mGameBoardHorizontalMargin = HORIZONTAL_THUMB_MARGIN_IN_PX;
         mBackgroundColor = gameBoardColor;
+
+        float gameBoardCenterX = HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth / 2f;
+
+        mLeftPlayerScore = new PongScore(SCORE_COLOR,
+                gameBoardCenterX - SCORE_MARGIN_FROM_CENTER_IN_PX, SCORE_TOP_MARGIN_IN_PX,
+                SCORE_TEXT_SIZE, true);
+
+        mRightPlayerScore = new PongScore(SCORE_COLOR,
+                gameBoardCenterX + SCORE_MARGIN_FROM_CENTER_IN_PX, SCORE_TOP_MARGIN_IN_PX,
+                SCORE_TEXT_SIZE, false);
 
         initializeGameObjects();
     }
 
-    public PongScene(int gameBoardWidth, int gameBoardHeight) {
-        this(gameBoardWidth, gameBoardHeight, DEFAULT_BACKGROUND_COLOR);
+    public PongScene(int availableWidth, int availableHeight) {
+        this(availableWidth, availableHeight, DEFAULT_BACKGROUND_COLOR);
     }
 
 
@@ -97,7 +113,7 @@ public class PongScene implements GameObjects.Scene {
             sideWallHit = sideWallHit || moveBallAndCheckResult(ball, millisSinceLastUpdate);
         }
 
-        //TODO - if consecutivePaddleHits exceeds a threshold, add bonus balls?
+        //TODO - if mConsecutivePaddleHits exceeds a threshold, add bonus balls?
 
         return sideWallHit;
     }
@@ -105,6 +121,11 @@ public class PongScene implements GameObjects.Scene {
     @Override
     public int getBackgroundColor() {
         return mBackgroundColor;
+    }
+
+    @Override
+    public List<GameEngine.ScoreToRender> getScoresToRender() {
+        return mScoresToRender;
     }
 
     @Override
@@ -145,6 +166,8 @@ public class PongScene implements GameObjects.Scene {
         mGameBoardHeight = in.readInt();
         mGameBoardHorizontalMargin = in.readInt();
         mBackgroundColor = in.readInt();
+        mLeftPlayerScore = in.readParcelable(GameObjects.Score.class.getClassLoader());
+        mRightPlayerScore = in.readParcelable(GameObjects.Score.class.getClassLoader());
         mLeftEndLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
         mRightEndLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
         mCenterLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
@@ -152,7 +175,7 @@ public class PongScene implements GameObjects.Scene {
         mRightPaddle = in.readParcelable(GameObjects.Paddle.class.getClassLoader());
         mNormalBall = in.readParcelable(GameObjects.Ball.class.getClassLoader());
         mBonusBalls = in.createTypedArrayList(PongBall.CREATOR);
-        consecutivePaddleHits = in.readInt();
+        mConsecutivePaddleHits = in.readInt();
     }
 
     @Override
@@ -161,6 +184,8 @@ public class PongScene implements GameObjects.Scene {
         dest.writeInt(mGameBoardHeight);
         dest.writeInt(mGameBoardHorizontalMargin);
         dest.writeInt(mBackgroundColor);
+        dest.writeParcelable(mLeftPlayerScore, flags);
+        dest.writeParcelable(mRightPlayerScore, flags);
         dest.writeParcelable(mLeftEndLine, flags);
         dest.writeParcelable(mRightEndLine, flags);
         dest.writeParcelable(mCenterLine, flags);
@@ -168,7 +193,7 @@ public class PongScene implements GameObjects.Scene {
         dest.writeParcelable(mRightPaddle, flags);
         dest.writeParcelable(mNormalBall, flags);
         dest.writeTypedList(mBonusBalls);
-        dest.writeInt(consecutivePaddleHits);
+        dest.writeInt(mConsecutivePaddleHits);
     }
 
     @Override
@@ -198,7 +223,9 @@ public class PongScene implements GameObjects.Scene {
      */
     private void initializeGameObjects() {
 
-        // Add left, right, and center line
+        mConsecutivePaddleHits = 0;
+
+        // Add left, right, and center line.
         mLeftEndLine = new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX, 0, mGameBoardHeight,
                 END_LINE_COLOR, false);
 
@@ -227,6 +254,11 @@ public class PongScene implements GameObjects.Scene {
         else {
             mBonusBalls.clear();
         }
+
+        // Instantiate and initialize a list of scores to return to the renderer.
+        mScoresToRender = new ArrayList<>(2);
+        mScoresToRender.add(mLeftPlayerScore);
+        mScoresToRender.add(mRightPlayerScore);
 
         // Instantiate and initialize a list of vertical lines to return to the renderer.
         mVerticalLinesToRender = new ArrayList<>(3);
@@ -282,7 +314,7 @@ public class PongScene implements GameObjects.Scene {
         // Check for collision with left paddle
         float collision = mLeftPaddle.getRelativeCollisionLocation(ball);
         if (collision != NO_PADDLE_HIT) {
-            consecutivePaddleHits += 1;
+            mConsecutivePaddleHits += 1;
             ball.setDirection(getDirectionAfterPaddleCollision(LEFT_PADDLE, collision));
             ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT);
             return true;
@@ -291,7 +323,7 @@ public class PongScene implements GameObjects.Scene {
             // If no collision with left paddle, check right paddle
             collision = mRightPaddle.getRelativeCollisionLocation(ball);
             if (collision != NO_PADDLE_HIT) {
-                consecutivePaddleHits += 1;
+                mConsecutivePaddleHits += 1;
                 ball.setDirection(getDirectionAfterPaddleCollision(RIGHT_PADDLE, collision));
                 ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT);
                 return true;
@@ -325,14 +357,16 @@ public class PongScene implements GameObjects.Scene {
                 case GameObjects.Scene.LEFT_WALL_HIT: {
                     ball.setColor(BALL_COLOR_ON_POINT_SCORED);
                     mLeftEndLine.setColor(END_LINE_COLOR_ON_POINT_SCORED);
-                    consecutivePaddleHits = 0;
+                    mRightPlayerScore.incrementScoreByOne();
+                    mConsecutivePaddleHits = 0;
                     return true;
                 }
 
                 case GameObjects.Scene.RIGHT_WALL_HIT: {
                     ball.setColor(BALL_COLOR_ON_POINT_SCORED);
                     mRightEndLine.setColor(END_LINE_COLOR_ON_POINT_SCORED);
-                    consecutivePaddleHits = 0;
+                    mLeftPlayerScore.incrementScoreByOne();
+                    mConsecutivePaddleHits = 0;
                     return true;
                 }
 

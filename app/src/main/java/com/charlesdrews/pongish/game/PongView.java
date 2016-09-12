@@ -2,7 +2,6 @@ package com.charlesdrews.pongish.game;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.support.annotation.NonNull;
@@ -212,6 +211,20 @@ public class PongView extends SurfaceView implements SurfaceHolder.Callback, Gam
             mPaint.setPathEffect(null);
         }
         mCanvas.drawLine(x, topY, x, bottomY, mPaint);
+    }
+
+    @Override
+    public void drawScore(@NonNull String scoreText, float x, float topY, float textSize,
+                          int color, boolean rightAlign) {
+        mPaint.setColor(color);
+        mPaint.setTextSize(textSize);
+        if (rightAlign) {
+            mPaint.setTextAlign(Paint.Align.RIGHT);
+        }
+        else {
+            mPaint.setTextAlign(Paint.Align.LEFT);
+        }
+        mCanvas.drawText(scoreText, x, topY + textSize, mPaint);
     }
 
     @Override

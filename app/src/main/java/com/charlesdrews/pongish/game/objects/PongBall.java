@@ -1,8 +1,6 @@
 package com.charlesdrews.pongish.game.objects;
 
-import android.graphics.Color;
 import android.os.Parcel;
-import android.os.Parcelable;
 
 /**
  * Models a ball that moves in a straight line without gravity or friction (i.e. speed does and
