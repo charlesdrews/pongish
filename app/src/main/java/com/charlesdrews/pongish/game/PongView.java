@@ -169,6 +169,8 @@ public class PongView extends SurfaceView implements SurfaceHolder.Callback, Gam
     @Override
     public void unbindPresenter() {
         mPresenter = null;
+        mLeftSideMoveInProgress = false;
+        mRightSideMoveInProgress = false;
     }
 
     @Override
