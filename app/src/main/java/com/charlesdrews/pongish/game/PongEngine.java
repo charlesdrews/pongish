@@ -178,6 +178,7 @@ public class PongEngine implements GameEngine.Engine {
                     rect.getColor());
         }
 
+        /*
         // Draw the frames per second as text.
         long framesPerSecond = 0L;
         if (mLastFrameRenderTimeInMillis > 0L) {
@@ -187,6 +188,7 @@ public class PongEngine implements GameEngine.Engine {
         mRenderer.drawFramesPerSecond(
                 String.format(Locale.getDefault(), FPS_TEMPLATE, framesPerSecond),
                 FPS_X_COORDINATE, FPS_Y_COORDINATE, FPS_TEXT_SIZE, FPS_TEXT_COLOR);
+        */
     }
 
     private void drawCountDown() {
