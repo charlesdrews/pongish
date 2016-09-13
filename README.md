@@ -10,3 +10,9 @@ Features include:
 Here's what it looks like (the gameplay is smoother when you're not recording video to Android Studio, I promise!):
 
 <img src="images/pongish.gif" width="600"/>
+
+Screenshots:
+
+<img src="images/single_ball.png" width="400"/>
+<img src="images/bonus_balls.png" width="400"/>
+<img src="images/menu.png" width="400"/>
