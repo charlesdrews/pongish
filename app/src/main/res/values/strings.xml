@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Pong... ish</string>
 
+    <string name="version">v1.1</string>
+    <string name="version_update_dialog_title">What\'s new in %s</string>
+    <string name="version_update_dialog_body"><![CDATA[&#8226; Paddles, balls, and speeds now automatically scale up for larger screens<br/><br/>&#8226; The main ball is now worth 3 points; bonus balls still worth 1 point]]></string>
+    <string name="version_update_dialog_positive_button_text">GOT IT</string>
+
     <string name="two_player_game_button">TWO PLAYER GAME</string>
     <string name="one_player_on_right_button">SINGLE PLAYER ON RIGHT</string>
     <string name="one_player_on_left_button">SINGLE PLAYER ON LEFT</string>
