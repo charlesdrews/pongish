@@ -96,7 +96,7 @@ public interface GameObjects {
     }
 
     interface Score extends GameEngine.ScoreToRender, Parcelable {
-        void incrementScoreByOne();
+        void increaseScore(int pointsToAddToScore);
         void setScore(int score);
     }
 

@@ -25,8 +25,8 @@ public class PongScore implements GameObjects.Score {
     // ================================ GameObjects.Score methods =================================
 
     @Override
-    public void incrementScoreByOne() {
-        mScore += 1;
+    public void increaseScore(final int pointsToAddToScore) {
+        mScore += pointsToAddToScore;
     }
 
     @Override

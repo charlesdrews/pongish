@@ -3,7 +3,6 @@ package com.charlesdrews.pongish.game.objects;
 import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import com.charlesdrews.pongish.game.GameEngine;
 
@@ -37,10 +36,12 @@ public class PongScene implements GameObjects.Scene, Parcelable {
     private static final float PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT = 0.2f;
     private static final float PADDLE_WIDTH_AS_PERCENT_OF_GAME_BOARD_WIDTH = 0.015f;
 
+    private static final int NORMAL_BALL_POINTS = 3;
     private static final int NORMAL_BALL_COLOR = Color.WHITE;
     private static final float NORMAL_BALL_RADIUS_AS_PERCENT_OF_GAME_BOARD_WIDTH = 0.022f;
     private static final float NORMAL_BALL_SPEED_AS_PERCENT_OF_GAME_BOARD_WIDTH_PER_SECOND = 0.509f;
 
+    private static final int BONUS_BALL_POINTS = 1;
     private static final int[] BONUS_BALL_COLORS = { Color.YELLOW, Color.CYAN, Color.MAGENTA };
     private static final float BONUS_BALL_RADIUS_AS_PERCENT_OF_GAME_BOARD_WIDTH = 0.015f;
     private static final float BONUS_BALL_SPEED_AS_PERCENT_OF_GAME_BOARD_WIDTH_PER_SECOND = 0.436f;
@@ -508,12 +509,12 @@ public class PongScene implements GameObjects.Scene, Parcelable {
                     mLeftEndLine.setColor(END_LINE_COLOR_ON_POINT_SCORED);
                     mTimeLeftEndLineTurnedRed = System.currentTimeMillis();
 
-                    mRightPlayerScore.incrementScoreByOne();
-
                     if (isNormalBall) {
+                        mRightPlayerScore.increaseScore(NORMAL_BALL_POINTS);
                         mConsecutivePaddleHits = 0;
                     }
                     else {
+                        mRightPlayerScore.increaseScore(BONUS_BALL_POINTS);
                         mBonusBalls.remove(ball);
                     }
 
@@ -526,12 +527,12 @@ public class PongScene implements GameObjects.Scene, Parcelable {
                     mRightEndLine.setColor(END_LINE_COLOR_ON_POINT_SCORED);
                     mTimeRightEndLineTurnedRed = System.currentTimeMillis();
 
-                    mLeftPlayerScore.incrementScoreByOne();
-
                     if (isNormalBall) {
+                        mLeftPlayerScore.increaseScore(NORMAL_BALL_POINTS);
                         mConsecutivePaddleHits = 0;
                     }
                     else {
+                        mLeftPlayerScore.increaseScore(BONUS_BALL_POINTS);
                         mBonusBalls.remove(ball);
                     }
 
