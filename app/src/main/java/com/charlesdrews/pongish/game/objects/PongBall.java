@@ -19,8 +19,8 @@ public class PongBall implements GameObjects.Ball {
 
     // =================================== Constructor ==========================================
 
-    public PongBall(final int gameBoardWidth, final int gameBoardHeight,
-                    final int gameBoardHorizontalMargin, final float radiusInPx,
+    public PongBall(final float gameBoardWidth, final float gameBoardHeight,
+                    final float gameBoardHorizontalMargin, final float radiusInPx,
                     final float speedInPxPerMs, final int color) {
         mCenterX = gameBoardHorizontalMargin + gameBoardWidth / 2f;
         mCenterY = gameBoardHeight / 2f;
@@ -35,7 +35,7 @@ public class PongBall implements GameObjects.Ball {
     // =============================== GameObjects.Ball methods ===================================
 
     @Override
-    public void move(final long millisecondsSinceLastUpdate, final int gameBoardHeight) {
+    public void move(final long millisecondsSinceLastUpdate, final float gameBoardHeight) {
         float distanceInPx = mSpeedInPxPerMs * millisecondsSinceLastUpdate;
 
         // Trigonometry
@@ -55,7 +55,7 @@ public class PongBall implements GameObjects.Ball {
     }
 
     @Override
-    public int checkIfPointScored(int gameBoardWidth, int gameBoardHorizontalMargin) {
+    public int checkIfPointScored(float gameBoardWidth, float gameBoardHorizontalMargin) {
 
         // Check left wall
         if (mCenterX - mRadiusInPx <= gameBoardHorizontalMargin) {
@@ -71,10 +71,8 @@ public class PongBall implements GameObjects.Ball {
     }
 
     @Override
-    public void changeSpeed(float deltaSpeedInPxPerMs) {
-        if (mSpeedInPxPerMs != 0) {
-            mSpeedInPxPerMs += deltaSpeedInPxPerMs;
-        }
+    public void changeSpeed(final float percentChangeInBallSpeed) {
+        mSpeedInPxPerMs *= (1f + percentChangeInBallSpeed);
     }
 
     @Override

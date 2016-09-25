@@ -154,8 +154,9 @@ public interface GameObjects {
          * Update the ball's position based on it's direction and the specified change in time.
          *
          * @param millisecondsSinceLastUpdate is the time delta for the ball's movement.
+         * @param gameBoardHeight
          */
-        void move(final long millisecondsSinceLastUpdate, final int gameBoardHeight);
+        void move(final long millisecondsSinceLastUpdate, final float gameBoardHeight);
 
         /**
          * Determine whether the ball has hit either the left or right side walls.
@@ -165,14 +166,14 @@ public interface GameObjects {
          * @return PongScene.NO_WALL_HIT (0), PongScene.LEFT_WALL_HIT (1),
          * or PongScene.RIGHT_WALL_HIT (2).
          */
-        int checkIfPointScored(final int gameBoardWidth, final int gameBoardHorizontalMargin);
+        int checkIfPointScored(final float gameBoardWidth, final float gameBoardHorizontalMargin);
 
         /**
-         * Increase or decrease speed by the given amount, depending on whether it is +/-.
+         * Increase or decrease speed by the given percentage, depending on whether it is +/-.
          *
-         * @param deltaSpeedInPxPerMs is the desired change in speed, either + or -.
+         * @param percentChangeInBallSpeed is the desired % change in speed, either + or -.
          */
-        void changeSpeed(final float deltaSpeedInPxPerMs);
+        void changeSpeed(final float percentChangeInBallSpeed);
 
         /**
          * Update the Ball's direction to the specified degrees.

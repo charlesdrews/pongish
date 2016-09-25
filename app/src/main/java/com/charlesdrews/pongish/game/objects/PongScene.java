@@ -2,6 +2,7 @@ package com.charlesdrews.pongish.game.objects;
 
 import android.graphics.Color;
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.charlesdrews.pongish.game.GameEngine;
@@ -15,36 +16,38 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * Created by charlie on 9/10/16.
  */
-public class PongScene implements GameObjects.Scene {
+public class PongScene implements GameObjects.Scene, Parcelable {
 
     // =================================== Constants =============================================
 
+    private static final String TAG = "PongScene";
+
     private static final int DEFAULT_BACKGROUND_COLOR = Color.BLACK;
-    private static final int HORIZONTAL_THUMB_MARGIN_IN_PX = 200;
+    private static final float HORIZONTAL_THUMB_MARGIN_AS_PERCENT_OF_SCREEN_WIDTH = 0.11f;
 
     private static final int SCORE_COLOR = Color.GREEN;
-    private static final float SCORE_TOP_MARGIN_IN_PX = 20f;
-    private static final float SCORE_MARGIN_FROM_CENTER_IN_PX = 40f;
-    private static final float SCORE_TEXT_SIZE = 100f;
+    private static final float SCORE_TOP_MARGIN_AS_PERCENT_OF_GAME_BOARD_HEIGHT = 0.02f;
+    private static final float SCORE_MARGIN_FROM_CENTER_AS_PERCENT_OF_GAME_BOARD_WIDTH = 0.03f;
+    private static final float SCORE_TEXT_SIZE_AS_PERCENT_OF_GAME_BOARD_HEIGHT = 0.1f;
 
     private static final int CENTER_LINE_COLOR = Color.WHITE;
     private static final int END_LINE_COLOR = Color.WHITE;
 
     private static final int PADDLE_COLOR = Color.WHITE;
     private static final float PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT = 0.2f;
-    private static final float PADDLE_WIDTH_IN_PX = 20f;
+    private static final float PADDLE_WIDTH_AS_PERCENT_OF_GAME_BOARD_WIDTH = 0.015f;
 
     private static final int NORMAL_BALL_COLOR = Color.WHITE;
-    private static final float NORMAL_BALL_RADIUS_IN_PX = 30f;
-    private static final float NORMAL_BALL_SPEED_IN_PX_PER_MS = 0.7f;
+    private static final float NORMAL_BALL_RADIUS_AS_PERCENT_OF_GAME_BOARD_WIDTH = 0.022f;
+    private static final float NORMAL_BALL_SPEED_AS_PERCENT_OF_GAME_BOARD_WIDTH_PER_SECOND = 0.509f;
 
     private static final int[] BONUS_BALL_COLORS = { Color.YELLOW, Color.CYAN, Color.MAGENTA };
-    private static final float BONUS_BALL_RADIUS_IN_PX = 20f;
-    private static final float BONUS_BALL_SPEED_IN_PX_PER_MS = 0.6f;
+    private static final float BONUS_BALL_RADIUS_AS_PERCENT_OF_GAME_BOARD_WIDTH = 0.015f;
+    private static final float BONUS_BALL_SPEED_AS_PERCENT_OF_GAME_BOARD_WIDTH_PER_SECOND = 0.436f;
 
     private static final int BONUS_BALLS_CONSECUTIVE_HITS_THRESHOLD = 10;
 
-    private static final float BALL_SPEED_INCREASE_ON_PADDLE_HIT = 0.03f;
+    private static final float BALL_SPEED_INCREASE_ON_PADDLE_HIT_AS_PERCENT_OF_CURRENT_SPEED = 0.04f;
 
     private static final int BALL_COLOR_ON_POINT_SCORED = Color.RED;
     private static final int END_LINE_COLOR_ON_POINT_SCORED = Color.RED;
@@ -57,8 +60,8 @@ public class PongScene implements GameObjects.Scene {
 
     // ================================= Member variables =======================================
 
-    private int mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, mBackgroundColor;
-    private int mComputerControlledPaddle;
+    private float mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin;
+    private int mBackgroundColor, mComputerControlledPaddle;
     private GameObjects.Score mLeftPlayerScore, mRightPlayerScore;
     private GameObjects.VerticalLine mLeftEndLine, mRightEndLine, mCenterLine;
     private GameObjects.Paddle mLeftPaddle, mRightPaddle;
@@ -90,20 +93,29 @@ public class PongScene implements GameObjects.Scene {
     public PongScene(final int availableWidth, final int availableHeight,
                      final int computerControlledPaddle, final int gameBoardColor) {
 
-        mGameBoardWidth = availableWidth - 2 * HORIZONTAL_THUMB_MARGIN_IN_PX;
+        mGameBoardHorizontalMargin = availableWidth *
+                HORIZONTAL_THUMB_MARGIN_AS_PERCENT_OF_SCREEN_WIDTH;
+
+        mGameBoardWidth = availableWidth - (2 * mGameBoardHorizontalMargin);
+
         mGameBoardHeight = availableHeight;
-        mGameBoardHorizontalMargin = HORIZONTAL_THUMB_MARGIN_IN_PX;
         mBackgroundColor = gameBoardColor;
 
-        float gameBoardCenterX = HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth / 2f;
+        float gameBoardCenterX = mGameBoardHorizontalMargin + (mGameBoardWidth / 2f);
 
         mLeftPlayerScore = new PongScore(SCORE_COLOR,
-                gameBoardCenterX - SCORE_MARGIN_FROM_CENTER_IN_PX, SCORE_TOP_MARGIN_IN_PX,
-                SCORE_TEXT_SIZE, true);
+                gameBoardCenterX -
+                        (SCORE_MARGIN_FROM_CENTER_AS_PERCENT_OF_GAME_BOARD_WIDTH * mGameBoardWidth),
+                SCORE_TOP_MARGIN_AS_PERCENT_OF_GAME_BOARD_HEIGHT * mGameBoardHeight,
+                SCORE_TEXT_SIZE_AS_PERCENT_OF_GAME_BOARD_HEIGHT * mGameBoardHeight,
+                true);
 
         mRightPlayerScore = new PongScore(SCORE_COLOR,
-                gameBoardCenterX + SCORE_MARGIN_FROM_CENTER_IN_PX, SCORE_TOP_MARGIN_IN_PX,
-                SCORE_TEXT_SIZE, false);
+                gameBoardCenterX +
+                        (SCORE_MARGIN_FROM_CENTER_AS_PERCENT_OF_GAME_BOARD_WIDTH * mGameBoardWidth),
+                SCORE_TOP_MARGIN_AS_PERCENT_OF_GAME_BOARD_HEIGHT * mGameBoardHeight,
+                SCORE_TEXT_SIZE_AS_PERCENT_OF_GAME_BOARD_HEIGHT * mGameBoardHeight,
+                false);
 
         mComputerControlledPaddle = computerControlledPaddle;
         initializeGameObjects();
@@ -125,6 +137,68 @@ public class PongScene implements GameObjects.Scene {
 
 
     // ============================= GameObjects.PongScene methods ===============================
+
+    protected PongScene(Parcel in) {
+        mGameBoardWidth = in.readFloat();
+        mGameBoardHeight = in.readFloat();
+        mGameBoardHorizontalMargin = in.readFloat();
+        mBackgroundColor = in.readInt();
+        mComputerControlledPaddle = in.readInt();
+        mLeftPlayerScore = in.readParcelable(GameObjects.Score.class.getClassLoader());
+        mRightPlayerScore = in.readParcelable(GameObjects.Score.class.getClassLoader());
+        mLeftEndLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
+        mRightEndLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
+        mCenterLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
+        mLeftPaddle = in.readParcelable(GameObjects.Paddle.class.getClassLoader());
+        mRightPaddle = in.readParcelable(GameObjects.Paddle.class.getClassLoader());
+        mNormalBall = in.readParcelable(GameObjects.Ball.class.getClassLoader());
+        mBonusBalls = in.createTypedArrayList(PongBall.CREATOR);
+        mConsecutivePaddleHits = in.readInt();
+        mNeedToAddBonusBalls = in.readByte() != 0;
+        mCountDownInProgress = in.readByte() != 0;
+        mTimeLeftEndLineTurnedRed = in.readLong();
+        mTimeRightEndLineTurnedRed = in.readLong();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeFloat(mGameBoardWidth);
+        dest.writeFloat(mGameBoardHeight);
+        dest.writeFloat(mGameBoardHorizontalMargin);
+        dest.writeInt(mBackgroundColor);
+        dest.writeInt(mComputerControlledPaddle);
+        dest.writeParcelable(mLeftPlayerScore, flags);
+        dest.writeParcelable(mRightPlayerScore, flags);
+        dest.writeParcelable(mLeftEndLine, flags);
+        dest.writeParcelable(mRightEndLine, flags);
+        dest.writeParcelable(mCenterLine, flags);
+        dest.writeParcelable(mLeftPaddle, flags);
+        dest.writeParcelable(mRightPaddle, flags);
+        dest.writeParcelable(mNormalBall, flags);
+        dest.writeTypedList(mBonusBalls);
+        dest.writeInt(mConsecutivePaddleHits);
+        dest.writeByte((byte) (mNeedToAddBonusBalls ? 1 : 0));
+        dest.writeByte((byte) (mCountDownInProgress ? 1 : 0));
+        dest.writeLong(mTimeLeftEndLineTurnedRed);
+        dest.writeLong(mTimeRightEndLineTurnedRed);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<PongScene> CREATOR = new Creator<PongScene>() {
+        @Override
+        public PongScene createFromParcel(Parcel in) {
+            return new PongScene(in);
+        }
+
+        @Override
+        public PongScene[] newArray(int size) {
+            return new PongScene[size];
+        }
+    };
 
     @Override
     public void movePaddle(final int paddle, final float deltaY, final long millisSinceLastUpdate) {
@@ -239,58 +313,6 @@ public class PongScene implements GameObjects.Scene {
 
     // =========================== Parcelable methods & constant ==================================
 
-    protected PongScene(Parcel in) {
-        mGameBoardWidth = in.readInt();
-        mGameBoardHeight = in.readInt();
-        mGameBoardHorizontalMargin = in.readInt();
-        mBackgroundColor = in.readInt();
-        mLeftPlayerScore = in.readParcelable(GameObjects.Score.class.getClassLoader());
-        mRightPlayerScore = in.readParcelable(GameObjects.Score.class.getClassLoader());
-        mLeftEndLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
-        mRightEndLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
-        mCenterLine = in.readParcelable(GameObjects.VerticalLine.class.getClassLoader());
-        mLeftPaddle = in.readParcelable(GameObjects.Paddle.class.getClassLoader());
-        mRightPaddle = in.readParcelable(GameObjects.Paddle.class.getClassLoader());
-        mNormalBall = in.readParcelable(GameObjects.Ball.class.getClassLoader());
-        mBonusBalls = in.createTypedArrayList(PongBall.CREATOR);
-        mConsecutivePaddleHits = in.readInt();
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(mGameBoardWidth);
-        dest.writeInt(mGameBoardHeight);
-        dest.writeInt(mGameBoardHorizontalMargin);
-        dest.writeInt(mBackgroundColor);
-        dest.writeParcelable(mLeftPlayerScore, flags);
-        dest.writeParcelable(mRightPlayerScore, flags);
-        dest.writeParcelable(mLeftEndLine, flags);
-        dest.writeParcelable(mRightEndLine, flags);
-        dest.writeParcelable(mCenterLine, flags);
-        dest.writeParcelable(mLeftPaddle, flags);
-        dest.writeParcelable(mRightPaddle, flags);
-        dest.writeParcelable(mNormalBall, flags);
-        dest.writeTypedList(mBonusBalls);
-        dest.writeInt(mConsecutivePaddleHits);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    public static final Creator<PongScene> CREATOR = new Creator<PongScene>() {
-        @Override
-        public PongScene createFromParcel(Parcel in) {
-            return new PongScene(in);
-        }
-
-        @Override
-        public PongScene[] newArray(int size) {
-            return new PongScene[size];
-        }
-    };
-
 
     // ================================ Helper methods ===========================================
 
@@ -304,13 +326,13 @@ public class PongScene implements GameObjects.Scene {
         mConsecutivePaddleHits = 0;
 
         // Add left, right, and center line.
-        mLeftEndLine = new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX, 0, mGameBoardHeight,
+        mLeftEndLine = new PongLine(mGameBoardHorizontalMargin, 0, mGameBoardHeight,
                 END_LINE_COLOR, false);
 
-        mRightEndLine = new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth, 0,
+        mRightEndLine = new PongLine(mGameBoardHorizontalMargin + mGameBoardWidth, 0,
                 mGameBoardHeight, END_LINE_COLOR, false);
 
-        mCenterLine = new PongLine(HORIZONTAL_THUMB_MARGIN_IN_PX + mGameBoardWidth / 2f, 0,
+        mCenterLine = new PongLine(mGameBoardHorizontalMargin + (mGameBoardWidth / 2f), 0,
                 mGameBoardHeight, CENTER_LINE_COLOR, true);
 
         // Add left & right paddles and the normal ball.
@@ -341,7 +363,10 @@ public class PongScene implements GameObjects.Scene {
         }
 
         mNormalBall = new PongBall(mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin,
-                NORMAL_BALL_RADIUS_IN_PX, NORMAL_BALL_SPEED_IN_PX_PER_MS, NORMAL_BALL_COLOR);
+                NORMAL_BALL_RADIUS_AS_PERCENT_OF_GAME_BOARD_WIDTH * mGameBoardWidth,
+                NORMAL_BALL_SPEED_AS_PERCENT_OF_GAME_BOARD_WIDTH_PER_SECOND *
+                        mGameBoardWidth / 1000f,
+                NORMAL_BALL_COLOR);
 
         // Instantiate an empty list for bonus balls, or if one exists, empty it.
         if (mBonusBalls == null) {
@@ -373,8 +398,9 @@ public class PongScene implements GameObjects.Scene {
     }
 
     private GameObjects.Paddle getNewPaddle(boolean isComputerControlled, int paddlePosition) {
-        return new PongPaddle(isComputerControlled, paddlePosition, PADDLE_WIDTH_IN_PX,
-                mGameBoardHeight * PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT,
+        return new PongPaddle(isComputerControlled, paddlePosition,
+                PADDLE_WIDTH_AS_PERCENT_OF_GAME_BOARD_WIDTH * mGameBoardWidth,
+                PADDLE_HEIGHT_AS_PERCENT_OF_GAME_BOARD_HEIGHT * mGameBoardHeight,
                 mGameBoardWidth, mGameBoardHeight, mGameBoardHorizontalMargin, PADDLE_COLOR);
     }
 
@@ -425,7 +451,7 @@ public class PongScene implements GameObjects.Scene {
             }
 
             ball.setDirection(getDirectionAfterPaddleCollision(LEFT_PADDLE, collisionLocation));
-            ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT);
+            ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT_AS_PERCENT_OF_CURRENT_SPEED);
             return true;
         }
         else {
@@ -438,7 +464,7 @@ public class PongScene implements GameObjects.Scene {
                 }
 
                 ball.setDirection(getDirectionAfterPaddleCollision(RIGHT_PADDLE, collisionLocation));
-                ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT);
+                ball.changeSpeed(BALL_SPEED_INCREASE_ON_PADDLE_HIT_AS_PERCENT_OF_CURRENT_SPEED);
                 return true;
             }
         }
@@ -525,7 +551,10 @@ public class PongScene implements GameObjects.Scene {
         for (int color : BONUS_BALL_COLORS) {
             mBonusBalls.add(new PongBall(mGameBoardWidth, mGameBoardHeight,
                     mGameBoardHorizontalMargin,
-                    BONUS_BALL_RADIUS_IN_PX, BONUS_BALL_SPEED_IN_PX_PER_MS, color));
+                    BONUS_BALL_RADIUS_AS_PERCENT_OF_GAME_BOARD_WIDTH * mGameBoardWidth,
+                    BONUS_BALL_SPEED_AS_PERCENT_OF_GAME_BOARD_WIDTH_PER_SECOND *
+                            mGameBoardWidth / 1000f,
+                    color));
         }
         mNeedToAddBonusBalls = false;
     }

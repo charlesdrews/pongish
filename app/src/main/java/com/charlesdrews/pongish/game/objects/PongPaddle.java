@@ -48,8 +48,8 @@ public class PongPaddle implements GameObjects.Paddle {
      */
     public PongPaddle(final boolean computerControlled, final int paddlePosition,
                       final float paddleWidth, final float paddleHeight,
-                      final int gameBoardWidth, final int gameBoardHeight,
-                      final int gameBoardHorizontalMargin, final int paddleColor) {
+                      final float gameBoardWidth, final float gameBoardHeight,
+                      final float gameBoardHorizontalMargin, final int paddleColor) {
 
         // Set left and right coordinates based on paddle type, or throw exception if invalid type
         if (paddlePosition == GameObjects.Scene.LEFT_PADDLE) {
@@ -67,7 +67,7 @@ public class PongPaddle implements GameObjects.Paddle {
                     "GameObjects.Scene.LEFT_PADDLE or GameObjects.Scene.RIGHT_PADDLE");
         }
 
-        mTopY =  (((float) gameBoardHeight) - paddleHeight) / 2f;
+        mTopY =  (gameBoardHeight - paddleHeight) / 2f;
         mBottomY = mTopY + paddleHeight;
 
         mColor = paddleColor;

@@ -145,6 +145,13 @@ public class PongView extends SurfaceView implements SurfaceHolder.Callback, Gam
     public void surfaceChanged(SurfaceHolder surfaceHolder, int format, int width, int height) {
         mPresenter.setGameBoardDimensions(width, height);
 
+        if (width > 2000) {
+            mPaint.setStrokeWidth(2f);
+        }
+        else {
+            mPaint.setStrokeWidth(1f);
+        }
+
         // If this is the first time surfaceChanged was called, then start the game!
         if (!mSurfaceReady) {
             mSurfaceReady = true;
