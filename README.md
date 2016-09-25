@@ -6,6 +6,7 @@ Features include:
 - Two player mode with multitouch to control both paddles at once
 - Single player vs. computer modes
 - Bonus balls added after enough volleys
+- Paddles, balls, and speeds automatically scale up for larger screens
 
 #### Try it out!
 
