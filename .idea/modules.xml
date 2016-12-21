@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$USER_HOME$/Dropbox/Charlie/Projects/pongish/app/app.iml" filepath="$USER_HOME$/Dropbox/Charlie/Projects/pongish/app/app.iml" />
-      <module fileurl="file://$USER_HOME$/Dropbox/Charlie/Projects/pongish/pongish.iml" filepath="$USER_HOME$/Dropbox/Charlie/Projects/pongish/pongish.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pongish.iml" filepath="$PROJECT_DIR$/pongish.iml" />
     </modules>
   </component>
 </project>

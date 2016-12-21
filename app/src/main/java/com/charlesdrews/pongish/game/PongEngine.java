@@ -22,6 +22,7 @@ public class PongEngine implements GameEngine.Engine {
     private static final int COUNTDOWN_TEXT_COLOR = Color.WHITE;
     private static final float COUNTDOWN_TEXT_SIZE = 150f;
 
+    private static final boolean SHOW_FPS = true;
     private static final String FPS_TEMPLATE = "FPS: %d";
     private static final int FPS_TEXT_COLOR = Color.WHITE;
     private static final float FPS_TEXT_SIZE = 40f;
@@ -178,17 +179,17 @@ public class PongEngine implements GameEngine.Engine {
                     rect.getColor());
         }
 
-        /*
-        // Draw the frames per second as text.
-        long framesPerSecond = 0L;
-        if (mLastFrameRenderTimeInMillis > 0L) {
-            framesPerSecond = 1_000L / mLastFrameRenderTimeInMillis;
-        }
+        if (SHOW_FPS) {
+            // Draw the frames per second as text.
+            long framesPerSecond = 0L;
+            if (mLastFrameRenderTimeInMillis > 0L) {
+                framesPerSecond = 1_000L / mLastFrameRenderTimeInMillis;
+            }
 
-        mRenderer.drawFramesPerSecond(
-                String.format(Locale.getDefault(), FPS_TEMPLATE, framesPerSecond),
-                FPS_X_COORDINATE, FPS_Y_COORDINATE, FPS_TEXT_SIZE, FPS_TEXT_COLOR);
-        */
+            mRenderer.drawFramesPerSecond(
+                    String.format(Locale.getDefault(), FPS_TEMPLATE, framesPerSecond),
+                    FPS_X_COORDINATE, FPS_Y_COORDINATE, FPS_TEXT_SIZE, FPS_TEXT_COLOR);
+        }
     }
 
     private void drawCountDown() {
